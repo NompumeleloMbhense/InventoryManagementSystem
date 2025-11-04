@@ -1,0 +1,97 @@
+@using ClientApp.Models
+@using ClientApp.Services
+@inject SupplierService SupplierService
+@inject NavigationManager Navigation
+
+
+<EditForm Model="@FormModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText class="form-control" @bind-Value="FormModel.Name" />
+        <ValidationMessage For="@(() => FormModel.Name)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Price</label>
+        <InputNumber class="form-control" @bind-Value="FormModel.Price" />
+        <ValidationMessage For="@(() => FormModel.Price)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Stock</label>
+        <InputNumber class="form-control" @bind-Value="FormModel.Stock" />
+        <ValidationMessage For="@(() => FormModel.Stock)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Category</label>
+        <InputSelect class="form-select" @bind-Value="FormModel.Category">
+            <option value="">-- Select Category ---</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Home Appliances">Home Appliances</option>
+            <option value="Groceries">Groceries</option>
+            <option value="Clothing">Clothing</option>
+            <option value="Stationery">Stationery</option>
+            <option value="Furniture">Furniture</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => FormModel.Category)" />
+    </div>
+
+    <div class="mb-3">
+        <label>Supplier</label>
+        @if (suppliers is null)
+        {
+            <p><em>Loading suppliers...</em></p>
+        }
+        else if (suppliers.Count == 0)
+        {
+            <p class="text-danger">No suppliers available.</p>
+        }
+        else
+        {
+            <InputSelect @bind-Value="FormModel.SupplierId" class="form-select">
+                <option value="0">-- Select Supplier --</option>
+                @foreach (var s in suppliers)
+                {
+                    <option value="@s.SupplierId">@s.Name</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="@(() => FormModel.SupplierId)" />
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary me-2">@SubmitButtonText</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+
+</EditForm>
+
+@code
+{
+    [Parameter]
+    public ProductFormModel FormModel { get; set; } = new();
+    [Parameter]
+    public string SubmitButtonText { get; set; } = "Save";
+    [Parameter]
+    public EventCallback<ProductFormModel> OnValidSubmitForm { get; set; }
+
+    private List<SupplierReadDto>? suppliers; // for selecting supplier in the dropdown
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await SupplierService.GetPaginatedAsync(1, 100); // load up to 100 suppliers
+        suppliers = response?.Data?.ToList() ?? new List<SupplierReadDto>();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        Console.WriteLine("Form passed validation.");
+        // When the form passes validation
+        await OnValidSubmitForm.InvokeAsync(FormModel);
+    }
+
+    private void Cancel() => Navigation.NavigateTo("/products");
+}

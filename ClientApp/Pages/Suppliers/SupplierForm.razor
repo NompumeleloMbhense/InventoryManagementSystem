@@ -1,0 +1,47 @@
+@using ClientApp.Models
+@inject NavigationManager Navigation
+
+<EditForm Model="@FormModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="mb-3">
+        <label class="form-label">Name</label>
+        <InputText class="form-control" @bind-Value="FormModel.Name" />
+        <ValidationMessage For="@(() => FormModel.Name)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Location</label>
+        <InputText class="form-control" @bind-Value="FormModel.Location" />
+        <ValidationMessage For="@(() => FormModel.Location)" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Email</label>
+        <InputText class="form-control" @bind-Value="FormModel.Email" />
+        <ValidationMessage For="@(() => FormModel.Email)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary me-2">@SubmitButtonText</button>
+    <button type="button" class="btn btn-secondary" @onclick="Cancel">Cancel</button>
+</EditForm>
+
+
+@code{
+    [Parameter]
+    public SupplierFormModel FormModel {get; set; } = new ();
+
+    [Parameter]
+    public string SubmitButtonText {get; set;}= "Save";
+
+    [Parameter]
+    public EventCallback<SupplierFormModel> OnValidSubmitForm {get; set;}
+
+
+    private async Task HandleValidSubmit()
+    {
+        await OnValidSubmitForm.InvokeAsync(FormModel);
+    }
+
+    private void Cancel() => Navigation.NavigateTo("/suppliers");
+ }

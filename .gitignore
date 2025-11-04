@@ -1,0 +1,33 @@
+# Build folders
+bin/
+obj/
+*/bin/
+*/obj/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE folders
+.vs/
+.vscode/
+
+# Logs
+*.log
+Logs/
+
+# Publish output
+publish/
+out/
+
+# Configuration files containing secrets
+appsettings.Development.json
+appsettings.Local.json
+*.Secrets.json
+*.env
+
+# Temporary files
+*.tmp
+*.temp

@@ -1,0 +1,54 @@
+@page "/suppliers/edit/{id:int}"
+@using ClientApp.Models
+@using ClientApp.Services
+@inject SupplierService SupplierService
+@inject NavigationManager Navigation
+
+<h3>Edit Supplier</h3>
+
+@if (supplierForm is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <SupplierForm FormModel="@supplierForm" SubmitButtonText="Update Supplier" OnValidSubmitForm="HandleUpdate" />
+}
+
+@code {
+    [Parameter]
+    public int id {get; set; } // Supplier ID from the URL
+    private SupplierFormModel? supplierForm;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var supplier = await SupplierService.GetByIdAsync(id);
+
+        // Populate the form model with existing supplier data
+        if(supplier is not null)
+        {
+            supplierForm = new SupplierFormModel
+            {
+                Name = supplier.Name,
+                Location = supplier.Location,
+                Email = supplier.Email
+            };
+        }
+    }
+
+    private async Task HandleUpdate(SupplierFormModel model)
+    {
+        // Create the DTO for updating the supplier
+        var dto = new SupplierUpdateDto
+        {
+            Name = model.Name,
+            Location = model.Location
+        };
+
+        var success = await SupplierService.UpdateAsync(id, dto);
+
+        if(success)
+            Navigation.NavigateTo("/suppliers");
+    }
+
+}

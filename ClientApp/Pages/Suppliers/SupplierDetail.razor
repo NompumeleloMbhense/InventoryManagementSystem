@@ -1,0 +1,79 @@
+@page "/suppliers/{SupplierId:int}"
+@using ClientApp.Models
+@using ClientApp.Services
+@inject SupplierService SupplierService
+@inject NavigationManager Navigation
+
+
+<h3 class="text-2xl font-bold mb-4">Supplier Details</h3>
+
+@if(supplier is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="mb-3">
+        <strong>Name:</strong>@supplier.Name<br />
+        <strong>Location:</strong>@supplier.Location<br />
+        <strong>Email:</strong>@supplier.Email
+    </div>
+
+    <h4>Products</h4>
+    @if(supplier.Products.Any())
+    {
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Category</th>
+                    <th>Available</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in supplier.Products)
+                {
+                    <tr>
+                        <td>@p.Name</td>
+                        <td>@p.Price</td>
+                        <td>@p.Stock</td>
+                        <td>@p.Category</td>
+                        <td>@p.Available</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }else
+    {
+        <p>This supplier has no products yet</p>
+    }
+
+
+    <button class="btn btn-secondary mt-3" @onclick="GoBack">Back to Supplier List </button>
+}
+
+@code {
+    [Parameter]
+    public int SupplierId { get; set; } // Get the ID from the URL
+
+    private SupplierWithProductsDto? supplier;
+
+    protected override async Task OnInitializedAsync()
+    {
+        supplier = await SupplierService.GetByIdAsync(SupplierId);
+
+        // Incase no supplier isn't found, go back to suppliers page
+        if(supplier is null)
+        {
+            Navigation.NavigateTo("/suppliers");
+        }
+    }
+
+    private void GoBack()
+    {
+        // Navigate back to the suppliers list page
+        Navigation.NavigateTo("/suppliers");
+    }
+}
