@@ -52,5 +52,13 @@ namespace ClientApp.Services
             var response = await _http.DeleteAsync($"api/products/{id}");
             return response.IsSuccessStatusCode;
         }
+
+        // Search
+        public async Task<IEnumerable<ProductReadDto>> SearchAsync(string? query, string? category)
+        {
+            var response = await _http.GetFromJsonAsync<IEnumerable<ProductReadDto>>(
+                $"api/products/search?query={query}&category={category}");
+            return response ?? new List<ProductReadDto>();
+        }
     }
 }

@@ -12,5 +12,6 @@ namespace ServerApp.Repositories
         Task UpdateAsync(Product product);
         Task DeleteAsync(int id);
         Task<bool> SupplierExistsAsync(int supplierId);
+        Task<IEnumerable<Product>> SearchAsync(string? query, string? category);
     }
 }

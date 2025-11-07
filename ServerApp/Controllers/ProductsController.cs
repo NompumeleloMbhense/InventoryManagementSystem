@@ -249,5 +249,26 @@ namespace ServerApp.Controllers
             await _repo.DeleteAsync(id);
             return NoContent();
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string? query, [FromQuery] string? category)
+        {
+            var products = await _repo.SearchAsync(query, category);
+
+            var result = products.Select(p => new
+            {
+                p.ProductId,
+                p.Name,
+                p.Price,
+                p.Stock,
+                p.Category,
+                p.Available,
+                p.SupplierId,
+                SupplierName = p.Supplier?.Name ?? string.Empty,
+                SupplierLocation = p.Supplier?.Location ?? string.Empty
+            });
+
+            return Ok(result);
+        }
     }
 }

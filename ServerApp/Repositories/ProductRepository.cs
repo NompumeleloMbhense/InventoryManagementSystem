@@ -95,5 +95,23 @@ namespace ServerApp.Repositories
         {
             return await _db.Suppliers.AnyAsync(s => s.SupplierId == supplierId);
         }
+
+        public async Task<IEnumerable<Product>> SearchAsync(string? query, string? category)
+        {
+            // Start with all products
+            var products = _db.Products
+                .Include(p => p.Supplier)
+                .AsQueryable();
+
+            
+            if (!string.IsNullOrWhiteSpace(query))
+                products = products.Where(p => p.Name.Contains(query));
+
+            if (!string.IsNullOrWhiteSpace(category))
+                products = products.Where(p => p.Category == category);
+
+            // Execute the query and return results
+            return await products.ToListAsync();
+        }
     }
 }

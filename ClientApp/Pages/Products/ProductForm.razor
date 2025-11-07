@@ -31,12 +31,9 @@
         <label class="form-label">Category</label>
         <InputSelect class="form-select" @bind-Value="FormModel.Category">
             <option value="">-- Select Category ---</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Home Appliances">Home Appliances</option>
-            <option value="Groceries">Groceries</option>
-            <option value="Clothing">Clothing</option>
-            <option value="Stationery">Stationery</option>
-            <option value="Furniture">Furniture</option>
+            <option value="Tech & Electronics">Tech & Electronics</option>
+            <option value="Home & Lifestyle">Home & Lifestyle</option>
+            <option value="Office & Accessories">Office & Accessories</option>
         </InputSelect>
         <ValidationMessage For="@(() => FormModel.Category)" />
     </div>
