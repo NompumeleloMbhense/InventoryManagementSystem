@@ -6,15 +6,22 @@ using ServerApp.Repositories;
 using SharedApp.Validators;
 using SharedApp.Dto;
 using SharedApp.Models;
+using ServerApp.Models;
+using Microsoft.AspNetCore.Identity;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Database MS SQL Server
+// Single DB for both app data and users
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("InventoryDBConnection")));
+
+// Identity configuration for app users
+builder.Services.AddIdentity<AppUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDbContext>()
+    .AddDefaultTokenProviders();
 
 // Repositories Services
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
