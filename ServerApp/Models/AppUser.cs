@@ -6,7 +6,7 @@ namespace ServerApp.Models
     {
         public string? FullName { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
-        public string? Role { get; set; }
+        
     }
+    
 }
