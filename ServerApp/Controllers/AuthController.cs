@@ -1,10 +1,17 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
 using ServerApp.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
+/// <summary>
+/// Controller responsible for user authentication
+/// Handles user registration and Login
+/// </summary>
+
 
 namespace ServerApp.Controllers
 {
@@ -21,6 +28,7 @@ namespace ServerApp.Controllers
             _config = config;
         }
 
+        [Authorize(Roles = "Admin")]
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
@@ -37,15 +45,20 @@ namespace ServerApp.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            return Ok(new { Message = "User registered successfully" });
+            // Assigning "User" role to the newly registered user
+            await _userManager.AddToRoleAsync(user, "User");
 
+            return Ok(new { Message = "User registered successfully" });
         }
 
+        [AllowAnonymous]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             // First, I am trying to find the user by email
             var user = await _userManager.FindByEmailAsync(model.Email);
+
+            // If the user does not exist or password is incorrect, return Unauthorized response
             if (user == null || !await _userManager.CheckPasswordAsync(user, model.Password))
                 return Unauthorized(new { Message = "Invalid email or password" });
 
@@ -55,32 +68,42 @@ namespace ServerApp.Controllers
             return Ok(new { token });
         }
 
+        // Method to generate JWT token for authenticated users to access protected resources 
+        // like to access product and supplier data 
+        // The token includes user ID and roles as claims
         private string GenerateJwtToken(AppUser user)
         {
             var jwtSettings = _config.GetSection("JwtSettings");
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
+            // Getting user roles
+            var roles = _userManager.GetRolesAsync(user).Result;
+
             // Defining token claims
             // Creating a JWT token for a user who has successfully logged in
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim("uid", user.Id),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            // Creating the token
+
+            // Adding role claims to the token
+            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+            // Creating the token to be signed for security
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
             var token = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["DurationInMinutes"])),
                 signingCredentials: creds);
-            
-            
-            return new JwtSecurityTokenHandler().WriteToken(token);
 
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }
 

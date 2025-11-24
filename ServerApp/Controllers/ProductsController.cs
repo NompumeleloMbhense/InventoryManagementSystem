@@ -1,5 +1,6 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SharedApp.Validators;
 using SharedApp.Models;
 using SharedApp.Dto;
@@ -36,8 +37,10 @@ namespace ServerApp.Controllers
         {
             return Ok("Products API is running...");
         }
-
+        
+        // READ endpoints - Publicly accessible
         // GET: api/products
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -73,7 +76,9 @@ namespace ServerApp.Controllers
             return Ok(response);
         }
 
+        // READ endpoint - Publicly accessible
         // GET: api/products/5
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -97,7 +102,9 @@ namespace ServerApp.Controllers
             return Ok(result);
         }
 
+        // WRITE endpoints - Require login (JWT)
         // POST: api/products
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(ProductCreateDto dto)
         {
@@ -150,7 +157,9 @@ namespace ServerApp.Controllers
             }
         }
 
+        // WRITE endpoints - Require login (JWT)
         // PUT: api/products/5
+        [Authorize]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, ProductUpdateDto dto)
         {
@@ -190,8 +199,9 @@ namespace ServerApp.Controllers
             return Ok(result);
         }
 
-
+        // WRITE endpoints - Require login (JWT)
         // PATCH: api/products/5
+        [Authorize]
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, ProductPatchDto dto)
         {
@@ -238,7 +248,9 @@ namespace ServerApp.Controllers
             return Ok(result);
         }
 
+        // WRITE endpoints - Require login (JWT)
         // DELETE: api/products/5
+        [Authorize]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -250,6 +262,9 @@ namespace ServerApp.Controllers
             return NoContent();
         }
 
+
+        // READ endpoints — Publicly accessible
+        [AllowAnonymous]
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string? query, [FromQuery] string? category)
         {
