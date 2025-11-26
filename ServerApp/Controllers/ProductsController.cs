@@ -103,8 +103,9 @@ namespace ServerApp.Controllers
         }
 
         // WRITE endpoints - Require login (JWT)
+        // ADMIN ONLY: Create Product
         // POST: api/products
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(ProductCreateDto dto)
         {
@@ -158,8 +159,9 @@ namespace ServerApp.Controllers
         }
 
         // WRITE endpoints - Require login (JWT)
+        // ADMIN ONLY: Full Update
         // PUT: api/products/5
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, ProductUpdateDto dto)
         {
@@ -200,6 +202,8 @@ namespace ServerApp.Controllers
         }
 
         // WRITE endpoints - Require login (JWT)
+        // USER: Only allowed to update Stock
+        // ADMIN: Allowed to update all fields
         // PATCH: api/products/5
         [Authorize]
         [HttpPatch("{id:int}")]
@@ -249,8 +253,9 @@ namespace ServerApp.Controllers
         }
 
         // WRITE endpoints - Require login (JWT)
+        // ADMIN ONLY: Delete
         // DELETE: api/products/5
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

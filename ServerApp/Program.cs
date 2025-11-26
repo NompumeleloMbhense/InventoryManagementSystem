@@ -111,5 +111,16 @@ app.MapControllers();
 // Seed initial data
 SeedData.EnsurePopulated(app);
 
+// Seed roles & users
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+
+    await IdentitySeedData.SeedRolesAndUsersAsync(userManager, roleManager);
+}
+
 app.Run();
 

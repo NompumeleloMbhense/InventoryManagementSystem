@@ -4,6 +4,7 @@ using SharedApp.Validators;
 using SharedApp.Models;
 using SharedApp.Dto;
 using ServerApp.Repositories;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ServerApp.Controllers
 {
@@ -34,6 +35,7 @@ namespace ServerApp.Controllers
         }
 
         // GET: api/suppliers
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
@@ -62,6 +64,7 @@ namespace ServerApp.Controllers
         }
 
         // GET: api/suppliers/5
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -93,6 +96,7 @@ namespace ServerApp.Controllers
         }
 
         // POST: api/suppliers
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(SupplierCreateDto dto)
         {
@@ -122,6 +126,7 @@ namespace ServerApp.Controllers
 
 
         // api/suppliers/5
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, SupplierUpdateDto dto)
         {
@@ -153,6 +158,7 @@ namespace ServerApp.Controllers
 
 
         // PATCH: api/suppliers/5
+        [Authorize(Roles = "Admin")]
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, SupplierPatchDto dto)
         {
@@ -187,6 +193,7 @@ namespace ServerApp.Controllers
         }
 
         // DELETE: api/suppliers/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -205,7 +212,6 @@ namespace ServerApp.Controllers
                 // Handle the case where the supplier has associated products
                 return BadRequest(new { error = ex.Message });
             }
-
 
         }
     }
