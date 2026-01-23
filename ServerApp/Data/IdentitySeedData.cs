@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Identity;
 using ServerApp.Models;
 
+/// <summary>
+/// Seeds initial roles and users into the identity database.
+/// Creates Admin and User roles, and default admin and user accounts.
+/// </summary>
+
 namespace ServerApp.Data
 {
     public static class IdentitySeedData

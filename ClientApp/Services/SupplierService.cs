@@ -1,6 +1,11 @@
 using System.Net.Http.Json;
 using ClientApp.Models;
 
+/// <summary>
+/// Service for managing suppliers.
+/// Provides methods for CRUD operations and searching suppliers.
+/// </summary>
+
 namespace ClientApp.Services
 {
     public class SupplierService
@@ -35,25 +40,27 @@ namespace ClientApp.Services
             return await _http.GetFromJsonAsync<SupplierWithProductsDto>($"api/suppliers/{id}");
         }
 
-        // Create supplier
+        // Create a supplier
         public async Task<bool> CreateAsync(SupplierCreateDto dto)
         {
             var response = await _http.PostAsJsonAsync("api/suppliers", dto);
             return response.IsSuccessStatusCode;
         }
 
-        // Update supplier
+        // Update a supplier
         public async Task<bool> UpdateAsync(int id, SupplierUpdateDto dto)
         {
             var response = await _http.PutAsJsonAsync($"api/suppliers/{id}", dto);
             return response.IsSuccessStatusCode;
         }
 
-        // Delete supplier
+        // Delete a supplier
         public async Task<bool> DeleteAsync(int id)
         {
             var response = await _http.DeleteAsync($"api/suppliers/{id}");
             return response.IsSuccessStatusCode;
         }
+
+        // TO DO: Add search functionality for suppliers 
     }
 }

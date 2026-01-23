@@ -1,5 +1,10 @@
 using SharedApp.Models;
 
+/// <summary>
+/// Repository interface for managing suppliers.
+/// Defines methods for CRUD operations and searching suppliers
+/// </summary>
+
 namespace ServerApp.Repositories
 {
     public interface ISupplierRepository

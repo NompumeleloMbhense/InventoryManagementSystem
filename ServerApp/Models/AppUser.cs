@@ -1,5 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 
+/// <summary>
+/// Application user model extending IdentityUser
+/// </summary>
+
 namespace ServerApp.Models
 {
     public class AppUser : IdentityUser

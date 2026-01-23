@@ -3,6 +3,11 @@ using SharedApp.Models;
 using SharedApp.Dto;
 using SharedApp.Validators;
 
+/// <summary>
+/// Validators for Product entity and its DTOs.
+/// Ensures data integrity and business rules and compliance.
+/// </summary>
+
 namespace SharedApp.Validators
 {
     public class ProductValidator : AbstractValidator<Product>

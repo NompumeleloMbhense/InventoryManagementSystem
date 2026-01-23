@@ -1,5 +1,9 @@
 using System.Text.Json.Serialization;
 
+/// <summary>
+/// Product model representing an item in inventory.
+/// </summary>
+
 namespace SharedApp.Models
 {
     public class Product

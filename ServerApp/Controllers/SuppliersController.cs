@@ -6,6 +6,11 @@ using SharedApp.Dto;
 using ServerApp.Repositories;
 using Microsoft.AspNetCore.Authorization;
 
+/// <summary>
+/// Controller for managing suppliers.
+/// Provides endpoints for CRUD operations and searching suppliers.
+/// </summary>
+
 namespace ServerApp.Controllers
 {
     [ApiController]

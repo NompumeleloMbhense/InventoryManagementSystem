@@ -2,6 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using ServerApp.Data;
 using SharedApp.Models;
 
+/// <summary>
+/// Repository implementation for managing suppliers.
+/// Provides methods for CRUD operations and searching suppliers.
+/// </summary>
+
 namespace ServerApp.Repositories
 {
     public class SupplierRepository : ISupplierRepository

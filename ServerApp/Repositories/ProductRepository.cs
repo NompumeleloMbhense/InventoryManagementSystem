@@ -2,6 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using ServerApp.Data;
 using SharedApp.Models;
 
+/// <summary>
+/// Repository implementation for managing products.
+/// Provides methods for CRUD operations and searching products.
+/// </summary>
+
 namespace ServerApp.Repositories
 {
 

@@ -1,3 +1,8 @@
+/// <summary>
+/// Data Transfer Objects for Supplier entity.
+/// Includes DTOs for reading, creating, updating and patching suppliers.
+/// </summary>
+
 namespace SharedApp.Dto
 {
     public class SupplierReadDto

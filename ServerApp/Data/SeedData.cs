@@ -1,6 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using SharedApp.Models;
 
+/// <summary>
+/// Seeds initial data into the database 
+/// Suppliers and Products.
+/// </summary>
+
 namespace ServerApp.Data
 {
     public static class SeedData

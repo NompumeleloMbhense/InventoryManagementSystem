@@ -2,6 +2,11 @@ using FluentValidation;
 using SharedApp.Models;
 using SharedApp.Dto;
 
+/// <summary>
+/// Validators for Suppliers and its DTOs.
+/// Ensures data integrity and business rules and compliance.
+/// </summary>
+
 namespace SharedApp.Validators
 {
     public class SupplierValidator : AbstractValidator<Supplier>

@@ -1,3 +1,8 @@
+/// <summary>
+/// Data Transfer Objects for Product entity.
+/// Includes DTOs for reading, creating, updating and patching products.
+/// </summary>
+
 namespace SharedApp.Dto
 {
     public class ProductReadDto

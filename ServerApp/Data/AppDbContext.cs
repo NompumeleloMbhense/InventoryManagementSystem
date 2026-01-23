@@ -3,6 +3,12 @@ using Microsoft.EntityFrameworkCore;
 using SharedApp.Models;
 using ServerApp.Models;
 
+/// <summary>
+/// Database context for the application.
+/// Includes DbSets for Products and Suppliers.
+/// Defines relationships and configurations.
+/// </summary>
+
 namespace ServerApp.Data
 {
     public class AppDbContext : IdentityDbContext<AppUser>

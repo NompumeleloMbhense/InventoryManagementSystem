@@ -6,6 +6,12 @@ using SharedApp.Models;
 using SharedApp.Dto;
 using ServerApp.Repositories;
 
+/// <summary>
+/// Controller for managing products.
+/// Provides endpoints for CRUD operations and searching products.
+/// </summary>
+
+
 namespace ServerApp.Controllers
 {
     [ApiController]

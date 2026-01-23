@@ -1,3 +1,7 @@
+/// <summary>
+/// Supplier model representing a supplier entity.
+/// </summary>
+
 namespace SharedApp.Models
 {
     public class Supplier

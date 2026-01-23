@@ -1,5 +1,10 @@
 using SharedApp.Models;
 
+/// <summary>
+/// Repository interface for managing products.
+/// Defines methods for CRUD operations and searching products
+/// </summary>
+
 namespace ServerApp.Repositories
 {
     public interface IProductRepository
