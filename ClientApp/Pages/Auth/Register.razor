@@ -1,0 +1,64 @@
+@page "/register"
+@using System.Net.Http.Json
+@using ClientApp.Models
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+<h3>Register</h3>
+
+<EditForm Model="registerModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator />
+    
+
+    <div class="mb-3">
+        <label>Full Name</label>
+        <InputText class="form-control" @bind-Value="registerModel.FullName" />
+        <ValidationMessage For="@(() => registerModel.FullName)" />
+    </div>
+
+
+    <div class="mb-3">
+        <label>Email</label>
+        <InputText class="form-control" @bind-Value="registerModel.Email" />
+        <ValidationMessage For="@(() => registerModel.Email)" />
+    </div>
+
+
+    <div class="mb-3">
+        <label>Password</label>
+        <InputText type="password" class="form-control" @bind-Value="registerModel.Password" />
+        <ValidationMessage For="@(() => registerModel.Password)" />
+    </div>
+
+    <button class="btn btn-primary" type="submit">Register</button>
+</EditForm>
+
+@if(!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger mt-3">
+        @errorMessage
+    </div>
+}
+
+@code
+{
+    private RegisterModel registerModel = new();
+    private string? errorMessage;
+
+    private async Task HandleRegister()
+    {
+        errorMessage = null;
+
+        var response = await Http.PostAsJsonAsync("api/auth/register", registerModel);
+
+        if (response.IsSuccessStatusCode)
+        {
+            // After a successful login, go to login page
+            Nav.NavigateTo("/login");
+        }
+        else
+        {
+            errorMessage = "Registration failed. Please try again";
+        }
+    }
+}
