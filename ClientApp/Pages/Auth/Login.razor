@@ -1,7 +1,9 @@
 @page "/login"
 @using System.Net.Http.Json
 @using ClientApp.Models
+@using ClientApp.Services
 @inject HttpClient Http
+@inject AuthTokenService TokenService
 @inject NavigationManager Nav
 @inject IJSRuntime JS
 
@@ -47,8 +49,9 @@
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
             if(result is not null)
             {
-                // Save the JWT in the local storage
-                await JS.InvokeVoidAsync("localStorage.setItem", "authToken", result.token);
+                // Save the JWT ( this is the token we created in AuthController) in the local storage
+                //await JS.InvokeVoidAsync("localStorage.setItem", "authToken", result.token);
+                await TokenService.SetTokenAsync(result.Token);
 
                 // Redirect to products page
                 Nav.NavigateTo("/products");

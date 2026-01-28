@@ -17,4 +17,19 @@ builder.Services.AddScoped(sp => new HttpClient
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<SupplierService>();
 
+// Register the AuthTokenService
+builder.Services.AddScoped<AuthTokenService>();
+builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
+
+builder.Services.AddHttpClient("ServerAPI", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5075/");
+})
+.AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
+
+builder.Services.AddScoped(sp =>
+    sp.GetRequiredService<IHttpClientFactory>()
+      .CreateClient("ServerAPI"));
+
+
 await builder.Build().RunAsync();

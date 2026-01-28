@@ -2,6 +2,7 @@
 @using ClientApp.Models
 @using ClientApp.Services
 @inject SupplierService SupplierService
+@inject AuthTokenService TokenService
 @inject NavigationManager Navigation
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
@@ -52,6 +53,8 @@ else
         <span>Page @pageNumber of @suppliers.TotalPages</span>
         <button class="btn btn-primary" @onclick="NextPage" disabled="@(!CanNext)">Next</button>
     </div>
+
+    <button class="btn btn-primary mt-3" @onclick="Logout">Logout</button>
 }
 
 
@@ -67,6 +70,14 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Check if user is logged in
+        var token = await TokenService.GetTokenAsync();
+        if (string.IsNullOrEmpty(token))
+        {
+            Navigation.NavigateTo("/login", forceLoad: true);
+            return;
+        }
+
         // Extract ?page=x from URL
         var uri = new Uri(Navigation.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
@@ -115,10 +126,16 @@ else
         {
             // Call the service to delete the supplier
             var success = await SupplierService.DeleteAsync(id);
-            
+
             // Reload the suppliers list if deletion was successfull
             if (success)
                 await LoadSuppliersAsync();
         }
+    }
+
+    private async Task Logout()
+    {
+        await TokenService.RemoveTokenAsync();
+        Navigation.NavigateTo("/login");
     }
 }

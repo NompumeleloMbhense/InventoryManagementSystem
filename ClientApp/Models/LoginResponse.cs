@@ -4,6 +4,6 @@ namespace ClientApp.Models
 {
     public class LoginResponse
     {
-        public string token { get; set; } = string.Empty;
+        public string Token { get; set; } = string.Empty;
     }
 }

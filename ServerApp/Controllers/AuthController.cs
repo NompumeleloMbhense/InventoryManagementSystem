@@ -65,9 +65,9 @@ namespace ServerApp.Controllers
                 return Unauthorized(new { Message = "Invalid email or password" });
 
             // After verifying user credential, I am generating a JWT token
-            // So that the client can use it for requesting protected resources
+            // So that the client (the frontend) can use it for requesting protected resources
             var token = await GenerateJwtToken(user);
-            return Ok(new { token });
+            return Ok(new { token }); // Returning this token to the frontend to store and use for subsequent requests
         }
 
          // Admin-only endpoint to promote a user to Admin
