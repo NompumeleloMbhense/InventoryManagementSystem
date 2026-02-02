@@ -12,6 +12,7 @@ namespace ClientApp.Services
     {
         private readonly IJSRuntime _js;
         private const string TokenKey = "authToken";
+        public event Action? AuthStateChanged;
 
         public AuthTokenService(IJSRuntime js)
         {
@@ -21,6 +22,7 @@ namespace ClientApp.Services
         public async Task SetTokenAsync(string token)
         {
             await _js.InvokeVoidAsync("localStorage.setItem", TokenKey, token);
+            AuthStateChanged?.Invoke();
         }
 
         public async Task<string?> GetTokenAsync()
@@ -31,6 +33,7 @@ namespace ClientApp.Services
         public async Task RemoveTokenAsync()
         {
             await _js.InvokeVoidAsync("localStorage.removeItem", TokenKey);
+            AuthStateChanged?.Invoke();
         }
 
     }

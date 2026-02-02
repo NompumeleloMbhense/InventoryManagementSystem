@@ -1,13 +1,45 @@
 @page "/"
+@using ClientApp.Services
+@inject AuthTokenService TokenService
+@inject NavigationManager Navigation
 
-<div class="text-center mt-5">
-    <h1 class="display-4 text-primary fw-bold mb-3">Welcome to Product & Supplier Manager</h1>
-    <p class="lead text-secondary mb-4">
-        Keep your inventory organized and your suppliers up to date - all in one place.
-    </p>
+@if (checkingAuth)
+{
+    <p class="text-center mt-5 "><em>Loading...</em></p>
+}
+else if (!isAuthenticated)
+{
+    <div class="text-center mt-5">
+        <h1 class="display-4 text-primary fw-bold">Welcome to Product & Supplier Manager</h1>
+        <p class="lead text-secondary mb-4">
+            Keep your inventory organized and your suppliers up to date. All in one place
+        </p>
 
-    <div class="d-flex justify-content-center gap-3">
-        <NavLink href="/products" class="btn btn-primary btn-lg">View Products</NavLink>
-        <NavLink href="/suppliers" class="btn btn-outline-secondary btn-lg">View Suppliers</NavLink>
+        <div class="d-flex justify-content-center gap-3">
+            <NavLink href="/login" class="btn btn-primary btn-lg">Login</NavLink>
+            <NavLink href="/register" class="btn btn-outline-secondary btn-lg">Register</NavLink>
+        </div>
     </div>
-</div>
+}
+
+@code
+{
+    private bool isAuthenticated;
+    private bool checkingAuth = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await TokenService.GetTokenAsync();
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            // User is logged in, send them to the app
+            Navigation.NavigateTo("/products", replace:true);
+            return;
+        }
+
+        // User is not logged in then show landing page
+        isAuthenticated = false;
+        checkingAuth = false;
+    }
+}
