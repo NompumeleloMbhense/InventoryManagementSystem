@@ -1,6 +1,8 @@
 ﻿@using ClientApp.Services
+@using ClientApp.Services.Auth
 @inherits LayoutComponentBase
 @inject AuthTokenService TokenService
+@inject JwtAuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
 <div class="d-flex flex-column min-vh-100">
@@ -81,6 +83,10 @@
     private async Task Logout()
     {
         await TokenService.RemoveTokenAsync();
+
+        var jwtProvider = (JwtAuthenticationStateProvider)AuthStateProvider;
+        jwtProvider.NotifyUserLogout();
+
         Navigation.NavigateTo("/login", replace:true);
     }
 
