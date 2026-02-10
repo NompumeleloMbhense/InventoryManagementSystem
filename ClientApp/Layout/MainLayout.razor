@@ -1,8 +1,9 @@
 ﻿@using ClientApp.Services
 @using ClientApp.Services.Auth
+@using Microsoft.AspNetCore.Components.Authorization
 @inherits LayoutComponentBase
 @inject AuthTokenService TokenService
-@inject JwtAuthenticationStateProvider AuthStateProvider
+@inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
 <div class="d-flex flex-column min-vh-100">
@@ -84,8 +85,10 @@
     {
         await TokenService.RemoveTokenAsync();
 
-        var jwtProvider = (JwtAuthenticationStateProvider)AuthStateProvider;
-        jwtProvider.NotifyUserLogout();
+        if(AuthStateProvider is JwtAuthenticationStateProvider jwtProvider)
+        {
+            jwtProvider.NotifyUserLogout();
+        }
 
         Navigation.NavigateTo("/login", replace:true);
     }
