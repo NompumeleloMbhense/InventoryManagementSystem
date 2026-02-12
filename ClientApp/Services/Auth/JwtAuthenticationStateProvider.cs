@@ -27,46 +27,50 @@ namespace ClientApp.Services.Auth
         {
             var token = await _tokenService.GetTokenAsync();
 
-            if(string.IsNullOrWhiteSpace(token))
+            if (string.IsNullOrWhiteSpace(token))
             {
-                // Not logged in
-                var anonymousUser = new ClaimsPrincipal(
-                    new ClaimsIdentity()
+                return new AuthenticationState(
+                    new ClaimsPrincipal(new ClaimsIdentity())
                 );
-                return new AuthenticationState(anonymousUser);
             }
 
-            // Logged in - build claims from token
             var claims = JwtParser.ParseClaimsFromJwt(token);
 
-            var authenticatedUser = new ClaimsPrincipal(
+            var user = new ClaimsPrincipal(
                 new ClaimsIdentity(claims, "jwt")
             );
-            return new AuthenticationState(authenticatedUser);
+
+            return new AuthenticationState(user);
         }
 
         // This method is called when the user logs in to update the authentication state.
-        public void NotifyUserAuthentication(string token)
+        // Notifies the Blazor framework that the user is now authenticated 
+        public async Task MarkUserAsAuthenticated(string token)
         {
+            await _tokenService.SetTokenAsync(token);
+
             var claims = JwtParser.ParseClaimsFromJwt(token);
-            var authenticatedUser = new ClaimsPrincipal(
+
+            var user = new ClaimsPrincipal(
                 new ClaimsIdentity(claims, "jwt")
             );
 
             NotifyAuthenticationStateChanged(
-                Task.FromResult(new AuthenticationState(authenticatedUser))
+                Task.FromResult(new AuthenticationState(user))
             );
         }
 
         // This method is called when the user logs out to update the authentication state.
-        public void NotifyUserLogout()
+        public async Task MarkUserAsLoggedOut()
         {
-            var anonymousUser = new ClaimsPrincipal(
+            await _tokenService.RemoveTokenAsync();
+
+            var anonymous = new ClaimsPrincipal(
                 new ClaimsIdentity()
             );
 
             NotifyAuthenticationStateChanged(
-                Task.FromResult(new AuthenticationState(anonymousUser))
+                Task.FromResult(new AuthenticationState(anonymous))
             );
         }
 

@@ -35,6 +35,9 @@ builder.Services.AddScoped(sp =>
 
 
 builder.Services.AddAuthorizationCore();
+
+// Whenever something asks for AuthenticationStateProvider,
+// give it an instance of JwtAuthenticationStateProvider.
 builder.Services.AddScoped<AuthenticationStateProvider, JwtAuthenticationStateProvider>();
 
 await builder.Build().RunAsync();

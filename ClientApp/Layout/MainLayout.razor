@@ -20,31 +20,37 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
 
-                    @if (!isAuthenticated)
-                    {
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="/login">Login</NavLink>
-                        </li>
+                    <AuthorizeView>
 
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="/register">Register</NavLink>
-                        </li>
-                    }
-                    else
-                    {
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="/">Home</NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="/products">Products</NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="/suppliers">Suppliers</NavLink>
-                        </li>
-                        <li class="nav-item">
-                            <button class="btn btn-link nav-link" @onclick="Logout">Logout</button>
-                        </li>
-                    }
+                        <NotAuthorized>
+
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="/login">Login</NavLink>
+                            </li>
+
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="/register">Register</NavLink>
+                            </li>
+                        </NotAuthorized>
+
+
+                        <Authorized>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="/">Home</NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="/products">Products</NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <NavLink class="nav-link" href="/suppliers">Suppliers</NavLink>
+                            </li>
+                            <li class="nav-item">
+                                <button class="btn btn-link nav-link" @onclick="Logout">Logout</button>
+                            </li>
+                        </Authorized>
+
+                    </AuthorizeView>
+
                 </ul>
             </div>
         </div>
@@ -63,38 +69,15 @@
     </footer>
 </div>
 
-@code {
-    private bool isAuthenticated;
-
-    protected override async Task OnInitializedAsync()
-    {
-        TokenService.AuthStateChanged += OnAuthStateChanged;
-
-        var token = await TokenService.GetTokenAsync();
-        isAuthenticated = !string.IsNullOrWhiteSpace(token);
-    }
-
-    private async void OnAuthStateChanged()
-    {
-        var token = await TokenService.GetTokenAsync();
-        isAuthenticated = !string.IsNullOrWhiteSpace(token);
-        await InvokeAsync(StateHasChanged);
-    }
-
+@code
+{
     private async Task Logout()
     {
-        await TokenService.RemoveTokenAsync();
-
-        if(AuthStateProvider is JwtAuthenticationStateProvider jwtProvider)
+        if (AuthStateProvider is JwtAuthenticationStateProvider jwtProvider)
         {
-            jwtProvider.NotifyUserLogout();
+            await jwtProvider.MarkUserAsLoggedOut();
         }
 
-        Navigation.NavigateTo("/login", replace:true);
-    }
-
-    public void Dispose()
-    {
-        TokenService.AuthStateChanged -= OnAuthStateChanged;
+        Navigation.NavigateTo("/login", replace: true);
     }
 }

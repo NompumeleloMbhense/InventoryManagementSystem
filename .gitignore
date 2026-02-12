@@ -31,3 +31,7 @@ appsettings.Local.json
 # Temporary files
 *.tmp
 *.temp
+
+.clj-kondo/
+
+db.transit.json

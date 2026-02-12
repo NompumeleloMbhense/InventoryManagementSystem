@@ -52,12 +52,13 @@
             var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
             if(result is not null)
             {
-                // Save the JWT ( this is the token we created in AuthController) in the local storage
-                //await JS.InvokeVoidAsync("localStorage.setItem", "authToken", result.token);
+                
+                // Store the token in local storage
                 await TokenService.SetTokenAsync(result.Token);
 
+                // Notify the authentication state provider that the user is now authenticated
                 var jwtProvider = (JwtAuthenticationStateProvider)AuthStateProvider;
-                jwtProvider.NotifyUserAuthentication(result.Token);
+                await jwtProvider.MarkUserAsAuthenticated(result.Token);
 
 
                 // Redirect to products page
