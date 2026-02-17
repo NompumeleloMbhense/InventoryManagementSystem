@@ -1,6 +1,7 @@
 ﻿@using ClientApp.Services
 @using ClientApp.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inherits LayoutComponentBase
 @inject AuthTokenService TokenService
 @inject AuthenticationStateProvider AuthStateProvider
@@ -23,7 +24,6 @@
                     <AuthorizeView>
 
                         <NotAuthorized>
-
                             <li class="nav-item">
                                 <NavLink class="nav-link" href="/login">Login</NavLink>
                             </li>
@@ -33,20 +33,30 @@
                             </li>
                         </NotAuthorized>
 
-
                         <Authorized>
+                            
+                            <li class="nav-item">
+                                <span class="nav-link text-white fw-semibold">
+                                    Welcome, @GetUserName(@context.User)
+                                </span>
+                            </li>
+
                             <li class="nav-item">
                                 <NavLink class="nav-link" href="/">Home</NavLink>
                             </li>
+
                             <li class="nav-item">
                                 <NavLink class="nav-link" href="/products">Products</NavLink>
                             </li>
+
                             <li class="nav-item">
                                 <NavLink class="nav-link" href="/suppliers">Suppliers</NavLink>
                             </li>
+
                             <li class="nav-item">
                                 <button class="btn btn-link nav-link" @onclick="Logout">Logout</button>
                             </li>
+                            
                         </Authorized>
 
                     </AuthorizeView>
@@ -71,6 +81,13 @@
 
 @code
 {
+    private string? GetUserName(ClaimsPrincipal user)
+    {
+        return user.FindFirst("fullName")?.Value
+           ?? user.FindFirst(ClaimTypes.Name)?.Value
+           ?? "User";
+    }
+
     private async Task Logout()
     {
         if (AuthStateProvider is JwtAuthenticationStateProvider jwtProvider)

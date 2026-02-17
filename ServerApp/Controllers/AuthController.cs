@@ -112,7 +112,10 @@ namespace ServerApp.Controllers
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
                 new Claim("uid", user.Id),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
+                new Claim("fullName", user.FullName ?? string.Empty)
             };
 
 
