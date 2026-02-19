@@ -1,7 +1,14 @@
 @page "/"
 @using ClientApp.Services
+@using ClientApp.Models
+@using ClientApp.Services.Auth
+@using Microsoft.AspNetCore.Components.Authorization
 @inject AuthTokenService TokenService
 @inject NavigationManager Navigation
+@inject ProductService ProductService
+@inject SupplierService SupplierService
+@inject AuthenticationStateProvider AuthStateProvider
+
 
 @if (checkingAuth)
 {
@@ -24,30 +31,113 @@ else if (!isAuthenticated)
 }
 else
 {
-    <!-- Authenticated Home-->
-    <div class="text-center mt-5">
-        <h1 class="display-4 text-primary fw-bold">Welcome back !</h1>
+    <!-- Authenticated Dashboard-->
+    <div class="container mt-5">
+        <h1 class="display-4 text-primary fw-bold text-center">
+            Welcome back, @userName!
+        </h1>
 
-        <div class="d-flex justify-content-center gap-3 mt-4">
-            <NavLink href="/products" class="btn btn-primary btn-lg">Products</NavLink>
-            <NavLink href="/suppliers" class="btn btn-outline-secondary btn-lg">Suppliers</NavLink>
+        <!--Dashboard Cards-->
+        <div class="row g-4 mt-4 justify-content-center">
+
+            <div class="col-md-3">
+                <div class="card text-center p-3 shadow-sm">
+                    <h5>Products</h5>
+                    <p class="display-6">@ProductsCount</p>
+                    <NavLink href="/products" class="btn btn-outline-primary">View</NavLink>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="card text-center p-3 shadow-sm">
+                    <h5>Suppliers</h5>
+                    <p class="display-6">@SuppliersCount</p>
+                    <NavLink href="/suppliers" class="btn btn-outline-success">View</NavLink>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="mt-5">
+            <h5 class="mb-3">Recent Products</h5>
+            @if (RecentProducts.Any())
+            {
+                <ul class="list-group mb-4">
+                    @foreach (var product in RecentProducts)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            @product.Name
+                            <span class="badge bg-primary">@product.Category</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No recent products.</p>
+            }
+
+            <h5 class="mb-3">Recent Suppliers</h5>
+            @if (RecentSuppliers.Any())
+            {
+                <ul class="list-group mb-4">
+                    @foreach (var supplier in RecentSuppliers)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            @supplier.Name
+                            <span class="badge bg-success">@supplier.Email</span>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p>No recent suppliers.</p>
+            }
         </div>
     </div>
 }
 
-@code
-{
+@code {
     private bool isAuthenticated;
     private bool checkingAuth = true;
+    private string userName = "User";
+
+    private int ProductsCount = 0;
+    private int SuppliersCount = 0;
+
+    private List<ProductReadDto> RecentProducts = new();
+    private List<SupplierReadDto> RecentSuppliers = new();
 
     protected override async Task OnInitializedAsync()
     {
+        // Check authentication
         var token = await TokenService.GetTokenAsync();
-
-        // I check if a token exists.
-        // If it does, mark the user as logged in.
-        // If it doesn't, mark them as logged out.
         isAuthenticated = !string.IsNullOrWhiteSpace(token);
+
+        if (isAuthenticated)
+        {
+            // Get the user name from AuthStateProvider
+            if (AuthStateProvider is JwtAuthenticationStateProvider jwtProvider)
+            {
+                var authState = await jwtProvider.GetAuthenticationStateAsync();
+                userName = authState.User.FindFirst("fullName")?.Value
+                           ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+                           ?? "User";
+            }
+
+            // Load dashboard counts
+            var productsPage = await ProductService.GetPaginatedAsync(1, 1000);
+            var suppliersPage = await SupplierService.GetPaginatedAsync(1, 1000);
+
+            ProductsCount = productsPage.Data.Count;
+            SuppliersCount = suppliersPage.Data.Count;
+
+            // Get the 3 most recent items
+            RecentProducts = productsPage.Data.OrderByDescending(p => p.ProductId).Take(3).ToList();
+            RecentSuppliers = suppliersPage.Data.OrderByDescending(s => s.SupplierId).Take(3).ToList();
+        }
+
         checkingAuth = false;
     }
 }
