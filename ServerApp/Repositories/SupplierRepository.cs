@@ -18,10 +18,29 @@ namespace ServerApp.Repositories
             _db = db;
         }
 
-        public async Task<IEnumerable<Supplier>> GetPaginatedAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Supplier>> GetPaginatedAsync(
+                    int pageNumber,
+                    int pageSize,
+                    string? searchTerm)
         {
-            return await _db.Suppliers
-            .Include(s => s.Products)
+            var query = _db.Suppliers
+                                                .Include(s => s.Products)
+                                                .AsQueryable();
+
+
+            // Search Filter
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var lowersearch = searchTerm.ToLower();
+
+                query = query.Where(s =>
+                        s.Name.ToLower().Contains(lowersearch) ||
+                        s.Email.ToLower().Contains(lowersearch) ||
+                        s.Location.ToLower().Contains(lowersearch));
+            }
+
+
+            return await query
             .OrderBy(s => s.SupplierId)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
@@ -30,9 +49,22 @@ namespace ServerApp.Repositories
 
 
         // Total suppliers for pagination
-        public async Task<int> GetTotalCountAsync()
+        public async Task<int> GetTotalCountAsync(string? searchTerm)
         {
-           return await _db.Suppliers.CountAsync();
+
+            var query = _db.Suppliers.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var lowerSearch = searchTerm.ToLower();
+
+                query = query.Where(s =>
+                        s.Name.ToLower().Contains(lowerSearch) ||
+                        s.Email.ToLower().Contains(lowerSearch) ||
+                        s.Location.ToLower().Contains(lowerSearch));
+            }
+
+            return await query.CountAsync();
         }
 
 

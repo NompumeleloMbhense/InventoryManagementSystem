@@ -42,13 +42,15 @@ namespace ServerApp.Controllers
         // GET: api/suppliers
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1,
+                                                 [FromQuery] int pageSize = 10,
+                                                 [FromQuery] string? searchTerm = null)
         {
             if (pageNumber < 1 || pageSize < 1)
                 return BadRequest(new { error = "PageNumber and PageSize must be greater than 0" });
 
-            var suppliers = await _repo.GetPaginatedAsync(pageNumber, pageSize);
-            var totalCount = await _repo.GetTotalCountAsync();
+            var suppliers = await _repo.GetPaginatedAsync(pageNumber, pageSize, searchTerm);
+            var totalCount = await _repo.GetTotalCountAsync(searchTerm);
 
             var response = new
             {

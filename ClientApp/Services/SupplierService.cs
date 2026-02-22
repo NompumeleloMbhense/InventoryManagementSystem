@@ -18,10 +18,20 @@ namespace ClientApp.Services
         }
 
         // Get paginated suppliers using PagedResponse<T>
-        public async Task<PagedResponse<SupplierReadDto>?> GetPaginatedAsync(int pageNumber = 1, int pageSize = 5)
+        public async Task<PagedResponse<SupplierReadDto>?> GetPaginatedAsync(int pageNumber = 1,
+                                                                             int pageSize = 5,
+                                                                             string? searchTerm = null)
         {
-            var response = await _http.GetFromJsonAsync<PagedResponse<SupplierReadDto>>(
-                $"api/suppliers?pageNumber={pageNumber}&pageSize={pageSize}");
+
+            var url = $"api/suppliers?pageNumber={pageNumber}&pageSize={pageSize}";
+
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                url += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+            }
+
+            var response = await _http.GetFromJsonAsync<PagedResponse<SupplierReadDto>>(url);
 
             return response ?? new PagedResponse<SupplierReadDto>
             {
@@ -62,5 +72,6 @@ namespace ClientApp.Services
         }
 
         // TO DO: Add search functionality for suppliers 
+
     }
 }
