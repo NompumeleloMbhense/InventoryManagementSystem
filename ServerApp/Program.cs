@@ -10,6 +10,7 @@ using ServerApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using ServerApp.Services;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,6 +75,8 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 
 builder.Host.UseSerilog();
+
+builder.Services.AddScoped<JwtTokenService>();
 
 var app = builder.Build();
 

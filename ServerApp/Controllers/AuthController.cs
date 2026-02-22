@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 using ServerApp.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using ServerApp.Services;
+using SharedApp.Dto;
 
 /// <summary>
 /// Controller responsible for user authentication
@@ -21,11 +19,16 @@ namespace ServerApp.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _config;
+        private readonly JwtTokenService _jwtService;
 
-        public AuthController(UserManager<AppUser> userManager, IConfiguration config)
+
+        public AuthController(UserManager<AppUser> userManager, 
+                                IConfiguration config,
+                                JwtTokenService jwtService)
         {
             _userManager = userManager;
             _config = config;
+            _jwtService = jwtService;
         }
 
 
@@ -66,7 +69,7 @@ namespace ServerApp.Controllers
 
             // After verifying user credential, I am generating a JWT token
             // So that the client (the frontend) can use it for requesting protected resources
-            var token = await GenerateJwtToken(user);
+            var token = await _jwtService.GenerateTokenAsync(user);
             return Ok(new { token }); // Returning this token to the frontend to store and use for subsequent requests
         }
 
@@ -94,51 +97,5 @@ namespace ServerApp.Controllers
             // In JWT, logout is typically handled on the client by discarding the token
             return Ok(new { Message = "Logout successful. Please discard your token client-side." });
         }
-
-        // Method to generate JWT token for authenticated users to access protected resources 
-        // like to access product and supplier data 
-        // The token includes user ID and roles as claims
-        private async Task<string> GenerateJwtToken(AppUser user)
-        {
-            var jwtSettings = _config.GetSection("JwtSettings");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
-
-            // Getting user roles
-            var roles = await _userManager.GetRolesAsync(user);
-
-            // Defining token claims
-            // Creating a JWT token for a user who has successfully logged in
-            var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim("uid", user.Id),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-                new Claim(ClaimTypes.Name, user.UserName ?? string.Empty),
-                new Claim("fullName", user.FullName ?? string.Empty)
-            };
-
-
-            // Adding role claims to the token
-            claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-            // Creating the token to be signed for security
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(jwtSettings["DurationInMinutes"])),
-                signingCredentials: creds);
-
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
     }
-
-    // DTOs for registration and Login
-    // I chose record types for simplicity
-    public record RegisterDto(string FullName, string Email, string Password);
-    public record LoginDto(string Email, string Password);
 }
