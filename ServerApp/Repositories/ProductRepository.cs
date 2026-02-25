@@ -45,6 +45,14 @@ namespace ServerApp.Repositories
             return await _db.Products.CountAsync();
         }
 
+        public async Task<IEnumerable<Product>> GetRecentAsync(int count)
+        {
+            return await _db.Products
+                    .OrderByDescending(p => p.ProductId)
+                    .Take(count)
+                    .ToListAsync();
+        }
+
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _db.Products

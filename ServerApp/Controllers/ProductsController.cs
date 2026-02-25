@@ -43,7 +43,7 @@ namespace ServerApp.Controllers
         {
             return Ok("Products API is running...");
         }
-        
+
         // READ endpoints - Publicly accessible
         // GET: api/products
         [AllowAnonymous]
@@ -295,6 +295,28 @@ namespace ServerApp.Controllers
             });
 
             return Ok(result);
+        }
+
+        [HttpGet("count")]
+        public async Task<ActionResult<int>> GetCount()
+        {
+            var count = await _repo.GetTotalCountAsync();
+            return Ok(count);
+        }
+
+        // GET: api/products/recent/{count}
+        [HttpGet("recent/{count}")]
+        public async Task<ActionResult<IEnumerable<ProductReadDto>>> GetRecent(int count)
+        {
+            var products = await _repo.GetRecentAsync(count);
+            var dtoList = products.Select(p => new ProductReadDto
+            {
+                ProductId = p.ProductId,
+                Name = p.Name,
+                Category = p.Category,
+                Price = p.Price
+            });
+            return Ok(dtoList);
         }
     }
 }

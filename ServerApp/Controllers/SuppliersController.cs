@@ -221,5 +221,31 @@ namespace ServerApp.Controllers
             }
 
         }
+
+        // GET: api/suppliers/count
+        [HttpGet("count")]
+        public async Task<ActionResult<int>> GetTotalCount()
+        {
+            var count = await _repo.GetTotalCountAsync();
+            return Ok(count);
+        }
+
+        // GET: api/suppliers/recent/{count}
+        [HttpGet("recent/{count}")]
+        public async Task<ActionResult<IEnumerable<SupplierReadDto>>> GetRecent(int count)
+        {
+            var suppliers = await _repo.GetRecentAsync(count);
+            // Map to DTO
+            var dtoList = suppliers.Select(s => new SupplierReadDto
+            {
+                SupplierId = s.SupplierId,
+                Name = s.Name,
+                Email = s.Email,
+                Location = s.Location
+            });
+            return Ok(dtoList);
+        }
+
+
     }
 }

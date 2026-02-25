@@ -36,6 +36,33 @@ main {
         text-overflow: ellipsis;
     }
 
+/* Sidebar */
+.sidebar {
+    width: 240px;
+    min-height: 100vh;
+}
+
+.sidebar .nav-link {
+    border-radius: 8px;
+    padding: 8px 12px;
+    transition: background 0.2s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: rgba(255,255,255,0.15);
+}
+
+/* Topbar */
+.topbar {
+    height: 60px;
+}
+
+/* Dashboard background */
+.dashboard-bg {
+    background-color: #f8f9fc;
+}
+
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;

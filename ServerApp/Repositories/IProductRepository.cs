@@ -12,6 +12,7 @@ namespace ServerApp.Repositories
         //Task<IEnumerable<Product>> GetAllAsync();
         Task<IEnumerable<Product>> GetPaginatedAsync(int pageNumber, int pageSize);
         Task<int> GetTotalCountAsync();
+        Task<IEnumerable<Product>> GetRecentAsync(int count);
         Task<Product?> GetByIdAsync(int id);
         Task AddAsync(Product product);
         Task UpdateAsync(Product product);

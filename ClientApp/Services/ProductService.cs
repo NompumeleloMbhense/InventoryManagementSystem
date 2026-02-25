@@ -65,5 +65,16 @@ namespace ClientApp.Services
                 $"api/products/search?query={query}&category={category}");
             return response ?? new List<ProductReadDto>();
         }
+
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await _http.GetFromJsonAsync<int>("api/products/count");
+        }
+
+        public async Task<List<ProductReadDto>> GetRecentAsync(int count)
+        {
+            return await _http.GetFromJsonAsync<List<ProductReadDto>>(
+                                $"api/products/recent/{count}");
+        }
     }
 }

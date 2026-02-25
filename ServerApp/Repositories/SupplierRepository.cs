@@ -49,7 +49,7 @@ namespace ServerApp.Repositories
 
 
         // Total suppliers for pagination
-        public async Task<int> GetTotalCountAsync(string? searchTerm)
+        public async Task<int> GetTotalCountAsync(string? searchTerm = null)
         {
 
             var query = _db.Suppliers.AsQueryable();
@@ -110,6 +110,14 @@ namespace ServerApp.Repositories
         public async Task<bool> SupplierExistsAsync(int supplierId)
         {
             return await _db.Suppliers.AnyAsync(s => s.SupplierId == supplierId);
+        }
+
+        public async Task<IEnumerable<Supplier>> GetRecentAsync(int count)
+        {
+            return await _db.Suppliers
+            .OrderByDescending(s => s.SupplierId) // newest first
+            .Take(count)
+            .ToListAsync();
         }
     }
 }

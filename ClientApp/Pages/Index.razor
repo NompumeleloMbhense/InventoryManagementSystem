@@ -3,6 +3,7 @@
 @using ClientApp.Models
 @using ClientApp.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
 @inject AuthTokenService TokenService
 @inject NavigationManager Navigation
 @inject ProductService ProductService
@@ -10,134 +11,175 @@
 @inject AuthenticationStateProvider AuthStateProvider
 
 
-@if (checkingAuth)
-{
-    <p class="text-center mt-5 "><em>Loading...</em></p>
-}
-else if (!isAuthenticated)
-{
-    <!-- Public Landing Page-->
-    <div class="text-center mt-5">
-        <h1 class="display-4 text-primary fw-bold">Welcome to Product & Supplier Manager</h1>
-        <p class="lead text-secondary mb-4">
-            Keep your inventory organized and your suppliers up to date. All in one place
-        </p>
+<AuthorizeView>
 
-        <div class="d-flex justify-content-center gap-3">
-            <NavLink href="/login" class="btn btn-primary btn-lg">Login</NavLink>
-            <NavLink href="/register" class="btn btn-outline-secondary btn-lg">Register</NavLink>
-        </div>
-    </div>
-}
-else
-{
-    <!-- Authenticated Dashboard-->
-    <div class="container mt-5">
-        <h1 class="display-4 text-primary fw-bold text-center">
-            Welcome back, @userName!
-        </h1>
+    <!-- 🔓 NOT AUTHENTICATED -->
+    <NotAuthorized>
+        <div class="text-center mt-5">
+            <h1 class="display-4 text-primary fw-bold">
+                Welcome to Product & Supplier Manager
+            </h1>
 
-        <!--Dashboard Cards-->
-        <div class="row g-4 mt-4 justify-content-center">
+            <p class="lead text-secondary mb-4">
+                Keep your inventory organized and your suppliers up to date. All in one place.
+            </p>
 
-            <div class="col-md-3">
-                <div class="card text-center p-3 shadow-sm">
-                    <h5>Products</h5>
-                    <p class="display-6">@ProductsCount</p>
-                    <NavLink href="/products" class="btn btn-outline-primary">View</NavLink>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card text-center p-3 shadow-sm">
-                    <h5>Suppliers</h5>
-                    <p class="display-6">@SuppliersCount</p>
-                    <NavLink href="/suppliers" class="btn btn-outline-success">View</NavLink>
-                </div>
+            <div class="d-flex justify-content-center gap-3">
+                <NavLink href="/login" class="btn btn-primary btn-lg">Login</NavLink>
+                <NavLink href="/register" class="btn btn-outline-secondary btn-lg">Register</NavLink>
             </div>
         </div>
+    </NotAuthorized>
 
-        <!-- Recent Activity -->
-        <div class="mt-5">
-            <h5 class="mb-3">Recent Products</h5>
-            @if (RecentProducts.Any())
-            {
-                <ul class="list-group mb-4">
-                    @foreach (var product in RecentProducts)
+    <!-- 🔐 AUTHENTICATED -->
+    <Authorized>
+
+        @if (isLoading)
+        {
+            <p class="text-center mt-5"><em>Loading dashboard...</em></p>
+        }
+        else
+        {
+            <div class="container mt-5">
+
+                <h2 class="fw-bold mb-2">
+                    Welcome back,
+                    <span class="text-primary">@userName</span>
+                </h2>
+
+                <p class="text-muted">
+                    Here's a quick overview of your system.
+                </p>
+
+                <!-- Dashboard Cards -->
+                <div class="row g-4 mt-4">
+
+                    <!-- Products Card -->
+                    <div class="col-md-4">
+                        <div class="card dashboard-card shadow-sm border-0 rounded-4 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total Products</h6>
+                                    <h2 class="fw-bold mb-0">@ProductsCount</h2>
+                                </div>
+                                <div class="icon-circle bg-primary-subtle text-primary">
+                                    <i class="bi bi-box-seam fs-4"></i>
+                                </div>
+                            </div>
+                            <NavLink href="/products"               class="btn btn-sm btn-outline-primary mt-3 w-100">
+                                View Products
+                            </NavLink>
+                        </div>
+                    </div>
+
+                    <!-- Suppliers Card -->
+                    <div class="col-md-4">
+                        <div class="card dashboard-card shadow-sm border-0 rounded-4 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Total Suppliers</h6>
+                                    <h2 class="fw-bold mb-0">@SuppliersCount</h2>
+                                </div>
+                                <div class="icon-circle bg-success-subtle text-success">
+                                    <i class="bi bi-people fs-4"></i>
+                                </div>
+                            </div>
+                            <NavLink href="/suppliers"  class="btn btn-sm btn-outline-success mt-3 w-100">
+                                View Suppliers
+                            </NavLink>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="mt-5">
+
+                    <h5 class="mb-3">Recent Products</h5>
+
+                    @if (RecentProducts.Any())
                     {
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            @product.Name
-                            <span class="badge bg-primary">@product.Category</span>
-                        </li>
+                        <ul class="list-group mb-4">
+                            @foreach (var product in RecentProducts)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @product.Name
+                                    <span class="badge bg-primary">@product.Category</span>
+                                </li>
+                            }
+                        </ul>
                     }
-                </ul>
-            }
-            else
-            {
-                <p>No recent products.</p>
-            }
-
-            <h5 class="mb-3">Recent Suppliers</h5>
-            @if (RecentSuppliers.Any())
-            {
-                <ul class="list-group mb-4">
-                    @foreach (var supplier in RecentSuppliers)
+                    else
                     {
-                        <li class="list-group-item d-flex justify-content-between align-items-center">
-                            @supplier.Name
-                            <span class="badge bg-success">@supplier.Email</span>
-                        </li>
+                        <p>No recent products.</p>
                     }
-                </ul>
-            }
-            else
-            {
-                <p>No recent suppliers.</p>
-            }
-        </div>
-    </div>
-}
 
-@code {
-    private bool isAuthenticated;
-    private bool checkingAuth = true;
+                    <h5 class="mb-3">Recent Suppliers</h5>
+
+                    @if (RecentSuppliers.Any())
+                    {
+                        <ul class="list-group mb-4">
+                            @foreach (var supplier in RecentSuppliers)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @supplier.Name
+                                    <span class="badge bg-success">@supplier.Email</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No recent suppliers.</p>
+                    }
+
+                </div>
+            </div>
+        }
+
+    </Authorized>
+
+</AuthorizeView>
+
+@code
+{
+    private bool isLoading = true;
+
+    // Stores the logged-in user's display name
     private string userName = "User";
 
     private int ProductsCount = 0;
     private int SuppliersCount = 0;
 
+    // Lists for recent activity display
     private List<ProductReadDto> RecentProducts = new();
     private List<SupplierReadDto> RecentSuppliers = new();
 
     protected override async Task OnInitializedAsync()
     {
-        // Check authentication
-        var token = await TokenService.GetTokenAsync();
-        isAuthenticated = !string.IsNullOrWhiteSpace(token);
+        // Getting the current authentication state from Blazor
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        if (isAuthenticated)
+        // Will load dashboard data only if user is authenticated
+        if (user.Identity?.IsAuthenticated == true)
         {
-            // Get the user name from AuthStateProvider
-            if (AuthStateProvider is JwtAuthenticationStateProvider jwtProvider)
-            {
-                var authState = await jwtProvider.GetAuthenticationStateAsync();
-                userName = authState.User.FindFirst("fullName")?.Value
-                           ?? authState.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
-                           ?? "User";
-            }
+            // Extracting user's name from claims
+            userName = user.FindFirst("fullName")?.Value ??
+            user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ??
+            "User";
 
-            // Load dashboard counts
-            var productsPage = await ProductService.GetPaginatedAsync(1, 1000);
-            var suppliersPage = await SupplierService.GetPaginatedAsync(1, 1000);
 
-            ProductsCount = productsPage.Data.Count;
-            SuppliersCount = suppliersPage.Data.Count;
+            // Fetch only the total counts (lightweight query)
+            ProductsCount = await ProductService.GetTotalCountAsync();
+            SuppliersCount = await SupplierService.GetTotalCountAsync();
 
-            // Get the 3 most recent items
-            RecentProducts = productsPage.Data.OrderByDescending(p => p.ProductId).Take(3).ToList();
-            RecentSuppliers = suppliersPage.Data.OrderByDescending(s => s.SupplierId).Take(3).ToList();
+            // Fetch only the 3 most recent items instead of 1000 records
+            RecentProducts = await ProductService.GetRecentAsync(3);
+            RecentSuppliers = await SupplierService.GetRecentAsync(3);
         }
 
-        checkingAuth = false;
+        // Stop loading spinner
+        isLoading = false;
     }
 }

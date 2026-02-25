@@ -7,76 +7,73 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 
-<div class="d-flex flex-column min-vh-100">
+<div class="d-flex min-vh-100">
 
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-semibold" href="/">Product & Supplier Manager</a>
+    <!-- Sidebar -->
+    <AuthorizeView>
+        <Authorized>
+            <div class="sidebar bg-dark text-white p-3">
+                <h5 class="fw-bold mb-4">Manager</h5>
 
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+                <ul class="nav flex-column">
 
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item mb-2">
+                        <NavLink href="/" class="nav-link text-white" Match="NavLinkMatch.All">
+                            <i class="bi bi-speedometer2 me-2"></i> Dashboard
+                        </NavLink>
+                    </li>
 
-                    <AuthorizeView>
+                    <li class="nav-item mb-2">
+                        <NavLink href="/products" class="nav-link text-white">
+                            <i class="bi bi-box-seam me-2"></i> Products
+                        </NavLink>
+                    </li>
 
-                        <NotAuthorized>
-                            <li class="nav-item">
-                                <NavLink class="nav-link" href="/login">Login</NavLink>
-                            </li>
+                    <li class="nav-item mb-2">
+                        <NavLink href="/suppliers" class="nav-link text-white">
+                            <i class="bi bi-people me-2"></i> Suppliers
+                        </NavLink>
+                    </li>
 
-                            <li class="nav-item">
-                                <NavLink class="nav-link" href="/register">Register</NavLink>
-                            </li>
-                        </NotAuthorized>
-
-                        <Authorized>
-                            
-                            <li class="nav-item">
-                                <span class="nav-link text-white fw-semibold">
-                                    Welcome, @GetUserName(@context.User)
-                                </span>
-                            </li>
-
-                            <li class="nav-item">
-                                <NavLink class="nav-link" href="/">Home</NavLink>
-                            </li>
-
-                            <li class="nav-item">
-                                <NavLink class="nav-link" href="/products">Products</NavLink>
-                            </li>
-
-                            <li class="nav-item">
-                                <NavLink class="nav-link" href="/suppliers">Suppliers</NavLink>
-                            </li>
-
-                            <li class="nav-item">
-                                <button class="btn btn-link nav-link" @onclick="Logout">Logout</button>
-                            </li>
-                            
-                        </Authorized>
-
-                    </AuthorizeView>
+                    <li class="nav-item mt-4">
+                        <button class="btn btn-outline-light w-100" @onclick="Logout">
+                            <i class="bi bi-box-arrow-right me-2"></i> Logout
+                        </button>
+                    </li>
 
                 </ul>
             </div>
-        </div>
-    </nav>
+        </Authorized>
+    </AuthorizeView>
 
-    <!-- Main content -->
-    <main class="flex-grow-1 container my-5">
-        @Body
-    </main>
+    <!-- Main Content Area -->
+    <div class="flex-grow-1 d-flex flex-column">
 
-    <!-- Footer -->
-    <footer class="bg-dark text-white text-center py-3 mt-auto">
-        <p class="mb-0">
-            © @DateTime.Now.Year - Product & Supplier Manager | Built with Blazor
-        </p>
-    </footer>
+        <!-- Topbar -->
+        <nav class="topbar bg-white shadow-sm px-4 py-2 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-semibold">Inventory Management System</h6>
+
+            <AuthorizeView>
+                <Authorized>
+                    <span class="text-muted">
+                        Welcome, @GetUserName(@context.User)
+                    </span>
+                </Authorized>
+            </AuthorizeView>
+        </nav>
+
+        <!-- Page Content -->
+        <main class="flex-grow-1 p-4 dashboard-bg">
+            @Body
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-light text-center py-2 small text-muted">
+            © @DateTime.Now.Year - Inventory Management System
+        </footer>
+
+    </div>
+
 </div>
 
 @code

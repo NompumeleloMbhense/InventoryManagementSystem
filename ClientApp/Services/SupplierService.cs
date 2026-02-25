@@ -71,7 +71,15 @@ namespace ClientApp.Services
             return response.IsSuccessStatusCode;
         }
 
-        // TO DO: Add search functionality for suppliers 
+        public async Task<int> GetTotalCountAsync()
+        {
+            return await _http.GetFromJsonAsync<int>("api/suppliers/count");
+        }
+
+        public async Task<List<SupplierReadDto>> GetRecentAsync(int count)
+        {
+            return await _http.GetFromJsonAsync<List<SupplierReadDto>>($"api/suppliers/recent/{count}");
+        }
 
     }
 }
