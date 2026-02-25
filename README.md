@@ -165,6 +165,18 @@ implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI
 
 ---
 
+### Images 
+<img width="1898" height="863" alt="Dashboard" src="https://github.com/user-attachments/assets/03e5e436-b063-43e8-bd19-b0dac52585a1" />
+<img width="1912" height="858" alt="ProductsListPage" src="https://github.com/user-attachments/assets/d9a27488-1d73-4ffe-a7c8-bf9833b2bcc9" />
+<img width="1912" height="866" alt="ProductDetails" src="https://github.com/user-attachments/assets/6e335107-ad2d-4cbf-b587-4fad8c3d5e26" />
+<img width="1891" height="866" alt="UpdateProduct" src="https://github.com/user-attachments/assets/7e80ad09-0183-4714-8fa3-7c05c44344e4" />
+<img width="1912" height="866" alt="SuppliersList" src="https://github.com/user-attachments/assets/897ee920-b9f7-4f67-8674-5ad9349a40d5" />
+<img width="1896" height="865" alt="SupplierDetails" src="https://github.com/user-attachments/assets/1bdbfc5f-895d-474b-8c6f-132049564f7f" />
+<img width="1907" height="858" alt="Login" src="https://github.com/user-attachments/assets/f57d6577-e8da-4af2-adc4-7f8b0ed012a6" />
+
+
+---
+
 ### License
 
 This project is licensed under the MIT License.
