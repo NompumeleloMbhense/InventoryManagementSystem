@@ -1,13 +1,28 @@
 @page "/suppliers"
+@attribute [Authorize]
 @using ClientApp.Models
 @using ClientApp.Services
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @inject SupplierService SupplierService
 @inject AuthTokenService TokenService
 @inject NavigationManager Navigation
+
 @inject Microsoft.JSInterop.IJSRuntime JSRuntime
 
 
 <h3 class="text-2xl font-bold mb-4">Suppliers</h3>
+
+<!-- Add Supplier button for Admins only -->
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <div class="mb-3">
+            <button class="btn btn-success" @onclick="AddSupplier">
+                + Add Supplier
+            </button>
+        </div>
+    </Authorized>
+</AuthorizeView>
 
 <div class="mb-3 d-flex gap-2">
     <input class="form-control" placeholder="Search suppliers..." @bind="searchTerm" @bind:event="oninput" />
@@ -37,7 +52,12 @@ else
                 <th>Name</th>
                 <th>Location</th>
                 <th>Email</th>
-                <th>Actions</th>
+                <!-- Actions column only for Admins -->
+                <AuthorizeView Roles="Admin">
+                    <Authorized>
+                        <th>Actions</th>
+                    </Authorized>
+                </AuthorizeView>
             </tr>
         </thead>
         <tbody>
@@ -52,8 +72,13 @@ else
                     <td>@s.Location</td>
                     <td>@s.Email</td>
                     <td>
-                        <button class="btn btn-sm btn-warning me-2" @onclick="() => EditSupplier(s.SupplierId)">Edit</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteSupplier(s.SupplierId)">Delete</button>
+                        <!-- Only Admins see Edit/Delete -->
+                        <AuthorizeView Roles="Admin">
+                            <Authorized>
+                                <button class="btn btn-sm btn-warning me-2" @onclick="() => EditSupplier(s.SupplierId)">Edit</button>
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteSupplier(s.SupplierId)">Delete</button>
+                            </Authorized>
+                        </AuthorizeView>
                     </td>
                 </tr>
             }
@@ -141,6 +166,8 @@ else
             await LoadSuppliersAsync();
         }
     }
+
+    private void AddSupplier() => Navigation.NavigateTo("/suppliers/add");
     private void EditSupplier(int id) => Navigation.NavigateTo($"/suppliers/edit/{id}");
 
     private async Task DeleteSupplier(int id)
@@ -156,11 +183,5 @@ else
             if (success)
                 await LoadSuppliersAsync();
         }
-    }
-
-    private async Task Logout()
-    {
-        await TokenService.RemoveTokenAsync();
-        Navigation.NavigateTo("/login");
     }
 }
