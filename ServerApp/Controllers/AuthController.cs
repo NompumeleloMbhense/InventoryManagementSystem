@@ -22,7 +22,7 @@ namespace ServerApp.Controllers
         private readonly JwtTokenService _jwtService;
 
 
-        public AuthController(UserManager<AppUser> userManager, 
+        public AuthController(UserManager<AppUser> userManager,
                                 IConfiguration config,
                                 JwtTokenService jwtService)
         {
@@ -37,6 +37,13 @@ namespace ServerApp.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
+            // First, I check if a user with the same email already
+            // exists to prevent duplicate accounts
+            var existingUser = await _userManager.FindByEmailAsync(model.Email);
+            if (existingUser != null)
+                return BadRequest(new { Errors = new[] { "This email is already registered" } });
+
+            // If the email is unique, I create a new AppUser
             var user = new AppUser
             {
                 UserName = model.Email,
@@ -44,11 +51,18 @@ namespace ServerApp.Controllers
                 FullName = model.FullName
             };
 
-            // Create the user
+            // Try to create the user with the provided password
             var result = await _userManager.CreateAsync(user, model.Password);
 
+            // Handle errors during user creation (like password not meeting requirements)
             if (!result.Succeeded)
-                return BadRequest(result.Errors);
+            {
+                var errors = result.Errors.Select(e =>
+                                        e.Code == "DuplicateUserName" ? "This email is already registered." : e.Description);
+
+
+                return BadRequest(new { Errors = errors });
+            }
 
             // Assigning "User" role to the newly registered user
             await _userManager.AddToRoleAsync(user, "User");
@@ -73,7 +87,7 @@ namespace ServerApp.Controllers
             return Ok(new { token }); // Returning this token to the frontend to store and use for subsequent requests
         }
 
-         // Admin-only endpoint to promote a user to Admin
+        // Admin-only endpoint to promote a user to Admin
         [Authorize(Roles = "Admin")]
         [HttpPost("promote/{userId}")]
         public async Task<IActionResult> PromoteToAdmin(string userId)
@@ -89,7 +103,7 @@ namespace ServerApp.Controllers
             return Ok(new { Message = "User promoted to Admin successfully" });
         }
 
-         // Logout endpoint (client should delete JWT, optional server-side invalidation)
+        // Logout endpoint (client should delete JWT, optional server-side invalidation)
         [Authorize]
         [HttpPost("logout")]
         public IActionResult Logout()
