@@ -1,39 +1,44 @@
 # Product & Supplier Manager
 
-A web application built with **Blazor WebAssembly** and **ASP.NET Core** to manage products and suppliers efficiently. 
-Users can register, log in, view, add, edit, and delete products and suppliers. 
-Authentication is handled using **JWT**, and authorization is role-based.
+A full-stack web application built with a Blazor WebAssembly frontend and an ASP.NET Core Web API backend. 
+This system provides comprehensive functionality for managing products and their suppliers,
+featuring JWT-based user authentication and role-based authorization.
 
 ---
 
-## Features
+## Key Features
 
-- **User Authentication**
-  - Register new users
-  - Login with JWT token
-  - Role-based access (Admin and User)
-  - Logout functionality
+-   **User Authentication**: Secure registration and login system using JWT (JSON Web Tokens).
+-   **Role-Based Access Control**: Differentiates between `Admin` and `User` roles. Admins have full CRUD access, while regular users have read-only permissions.
+-   **Product Management**: Admins can create, read, update, and delete products. The product list is paginated and includes search and filtering capabilities.
+-   **Supplier Management**: Admins can manage supplier information. The system supports full CRUD operations, pagination, and search for suppliers.
+-   **Dashboard**: A welcoming dashboard for authenticated users that provides a quick overview of total products and suppliers.
+-   **Clean Architecture**: The solution is separated into three distinct projects (`ServerApp`, `ClientApp`, `SharedApp`) for maintainability and separation of concerns.
+-   **Database Seeding**: The application automatically seeds the database with initial data (roles, users, products, suppliers) on startup for easy setup and testing.
 
-- **Product Management**
-  - View a paginated list of products
-  - Search and filter products by name or category
-  - Add, edit, and delete products (Admin privileges)
-  
-- **Supplier Management**
-  - View a paginated list of suppliers
-  - Add, edit, and delete suppliers (Admin privileges)
+---
 
-- **Frontend**
-  - Blazor WebAssembly pages for Products and Suppliers
-  - Responsive design with Bootstrap
+## System Architecture
 
-- **Backend**
-  - ASP.NET Core Web API
-  - Entity Framework Core for database operations
-  - SQL Server database
-  - Identity for user management
-  - JWT authentication for securing API endpoints
-  - Seeded initial data (Admin, User, products, suppliers)
+The application is structured into three main projects to enforce a clean separation of concerns:
+
+-   **`ServerApp`**: An ASP.NET Core Web API project that serves as the backend. It handles:
+    -   API endpoints for authentication, products, and suppliers.
+    -   Business logic and data access using the Repository pattern.
+    -   Database management with Entity Framework Core.
+    -   User and role management with ASP.NET Core Identity.
+    -   JWT generation and validation for securing the API.
+
+-   **`ClientApp`**: A Blazor WebAssembly project that provides the user interface. It is responsible for:
+    -   Rendering all UI components and pages.
+    -   Making HTTP requests to the `ServerApp` API.
+    -   Managing client-side authentication state and token storage in the browser's local storage.
+    -   Providing a responsive user experience.
+
+-   **`SharedApp`**: A .NET class library containing code shared between the `ServerApp` and `ClientApp`. This includes:
+    -   Domain models (`Product`, `Supplier`).
+    -   Data Transfer Objects (DTOs) for API communication.
+    -   Validation rules using FluentValidation to ensure consistency on both client and server.
 
 ---
 
@@ -158,7 +163,6 @@ implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI
 ### Future Improvements
 
     - Add refresh tokens to avoid frequent logins.
-    - Implement role-based UI, showing or hiding buttons based on the user role.
     - Add unit and integration tests for API endpoints.
     - Add sorting and advanced filtering for products and suppliers.
     - Enhance UI with more modern styling and mobile responsiveness.
