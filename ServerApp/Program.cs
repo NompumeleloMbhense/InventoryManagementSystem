@@ -91,24 +91,52 @@ builder.Services.AddScoped<JwtTokenService>();
 var app = builder.Build();
 
 
-// Global error handler for bad requests 
-app.Use(async (context, next) =>
+// Global error handler for bad requests and unhandled exceptions
+app.UseExceptionHandler(errorApp =>
 {
-    try
+    errorApp.Run(async context =>
     {
-        await next();
-    }
-    catch (BadHttpRequestException ex)
-    {
-        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        var logger = context.RequestServices
+            .GetRequiredService<ILogger<Program>>();
 
-        var error = ex.Message.Contains("Implicit body inferred")
-            ? "Request body is required."
-            : ex.Message;
+        var exceptionFeature = context.Features
+            .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
 
-        await context.Response.WriteAsJsonAsync(new { error });
-    }
+        var exception = exceptionFeature?.Error;
 
+        if (exception == null)
+            return;
+
+        logger.LogError(exception, "Unhandled exception occurred.");
+
+        context.Response.ContentType = "application/json";
+
+        switch (exception)
+        {
+            case KeyNotFoundException:
+                context.Response.StatusCode = StatusCodes.Status404NotFound;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    error = exception.Message
+                });
+                break;
+            case InvalidOperationException:
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    error = exception.Message
+                });
+                break;
+
+            default:
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    error = "An unexpected server error occurred."
+                });
+                break;
+        }
+    });
 });
 
 app.UseRouting();

@@ -5,6 +5,7 @@ using SharedApp.Validators;
 using SharedApp.Models;
 using SharedApp.Dto;
 using ServerApp.Repositories;
+using ServerApp.Mappings;
 
 /// <summary>
 /// Controller for managing products.
@@ -39,11 +40,6 @@ namespace ServerApp.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return Ok("Products API is running...");
-        }
-
         // READ endpoints - Publicly accessible
         // GET: api/products
         [AllowAnonymous]
@@ -57,29 +53,15 @@ namespace ServerApp.Controllers
             var products = await _repo.GetPaginatedAsync(pageNumber, pageSize);
             var totalCount = await _repo.GetTotalCountAsync();
 
-            var response = new
+
+            return Ok(new
             {
-                // Take each product and build a smaller, cleaned up object version to send to client
-                Data = products.Select(p => new ProductReadDto
-                {
-                    ProductId = p.ProductId,
-                    Name = p.Name,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                    Category = p.Category,
-                    Available = p.Available,
-                    SupplierId = p.SupplierId,
-                    SupplierName = p.Supplier?.Name ?? string.Empty,
-                    SupplierLocation = p.Supplier?.Location ?? string.Empty
-                }),
+                Data = products.Select(p => p.ToReadDto()),
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
-                // Calculate total pages of products
                 TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-
-            };
-            return Ok(response);
+            });
         }
 
         // READ endpoint - Publicly accessible
@@ -92,20 +74,8 @@ namespace ServerApp.Controllers
             if (product is null)
                 return NotFound(new { error = "Product not found" });
 
-            var result = new ProductReadDto
-            {
-                ProductId = product.ProductId,
-                Name = product.Name,
-                Price = product.Price,
-                Stock = product.Stock,
-                Category = product.Category,
-                Available = product.Available,
-                SupplierId = product.SupplierId,
-                SupplierName = product.Supplier?.Name ?? string.Empty, // Include Supplier name if available
-                SupplierLocation = product.Supplier?.Location ?? string.Empty // Include Supplier location if available
-            };
 
-            return Ok(result);
+            return Ok(product.ToReadDto());
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -115,53 +85,29 @@ namespace ServerApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ProductCreateDto dto)
         {
-            _logger.LogInformation("POST /api/products - Creating new product {@Product}", dto);
 
-            try
+            var validationResult = _createValidator.Validate(dto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors);
+
+
+            var product = new Product
             {
-                var validationResult = _createValidator.Validate(dto);
-                if (!validationResult.IsValid)
-                {
-                    _logger.LogWarning("Validation failed for product {@Product}. Errors: {@Errors}", dto, validationResult.Errors);
-                    return BadRequest(validationResult.Errors);
-                }
-                var product = new Product
-                {
-                    Name = dto.Name,
-                    Price = dto.Price,
-                    Stock = dto.Stock,
-                    Category = dto.Category,
-                    SupplierId = dto.SupplierId
-                };
+                Name = dto.Name,
+                Price = dto.Price,
+                Stock = dto.Stock,
+                Category = dto.Category,
+                SupplierId = dto.SupplierId
+            };
 
-                await _repo.AddAsync(product);
+            await _repo.AddAsync(product);
 
-                _logger.LogInformation("Product created successfully with ID {ProductId}", product.ProductId);
 
-                var result = new ProductReadDto
-                {
-                    ProductId = product.ProductId,
-                    Name = product.Name,
-                    Price = product.Price,
-                    Stock = product.Stock,
-                    Category = product.Category,
-                    Available = product.Available,
-                    SupplierId = product.SupplierId
-                };
+            return CreatedAtAction(nameof(GetById),
+            new { id = product.ProductId },
+            product.ToReadDto());
 
-                return CreatedAtAction(nameof(GetById), new { id = product.ProductId }, result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // SupplierId invalid or other repository-level validation
-                _logger.LogError(ex, "Invalid SupplierId provided for product {@Product}", dto);
-                return BadRequest(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error while creating product {@Product}", dto);
-                return StatusCode(500, new { message = "Internal Server Error" });
-            }
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -171,8 +117,8 @@ namespace ServerApp.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, ProductUpdateDto dto)
         {
-            var existingProduct = await _repo.GetByIdAsync(id);
-            if (existingProduct is null)
+            var product = await _repo.GetByIdAsync(id);
+            if (product is null)
                 return NotFound(new { error = "Product not found" });
 
             var validationResult = _updateValidator.Validate(dto);
@@ -180,31 +126,20 @@ namespace ServerApp.Controllers
                 return BadRequest(validationResult.Errors);
 
             // Check if SupplierId exists before updating
-            var supplierExists = await _repo.SupplierExistsAsync(dto.SupplierId); // you need this method in your repository
+            var supplierExists = await _repo.SupplierExistsAsync(dto.SupplierId);
             if (!supplierExists)
                 return BadRequest(new { message = "Invalid SupplierId." });
 
 
-            existingProduct.Name = dto.Name;
-            existingProduct.Price = dto.Price;
-            existingProduct.Stock = dto.Stock;
-            existingProduct.Category = dto.Category;
-            existingProduct.SupplierId = dto.SupplierId;
+            product.Name = dto.Name;
+            product.Price = dto.Price;
+            product.Stock = dto.Stock;
+            product.Category = dto.Category;
+            product.SupplierId = dto.SupplierId;
 
-            await _repo.UpdateAsync(existingProduct);
+            await _repo.UpdateAsync(product);
 
-            var result = new ProductReadDto
-            {
-                ProductId = existingProduct.ProductId,
-                Name = existingProduct.Name,
-                Price = existingProduct.Price,
-                Stock = existingProduct.Stock,
-                Category = existingProduct.Category,
-                Available = existingProduct.Available,
-                SupplierId = existingProduct.SupplierId
-            };
-
-            return Ok(result);
+            return Ok(product.ToReadDto());
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -215,8 +150,8 @@ namespace ServerApp.Controllers
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, ProductPatchDto dto)
         {
-            var existingProduct = await _repo.GetByIdAsync(id);
-            if (existingProduct is null)
+            var product = await _repo.GetByIdAsync(id);
+            if (product is null)
                 return NotFound(new { error = "Product not found" });
 
             var validationResult = _patchValidator.Validate(dto);
@@ -228,34 +163,29 @@ namespace ServerApp.Controllers
             {
                 var supplierExists = await _repo.SupplierExistsAsync(dto.SupplierId.Value);
                 if (!supplierExists)
-                    return BadRequest(new { error = $"Supplier with ID {dto.SupplierId.Value} does not exist." });
-                existingProduct.SupplierId = dto.SupplierId.Value;
+                    return BadRequest(new { error = "Invalid SupplierId" });
+
+                product.SupplierId = dto.SupplierId.Value;
             }
 
             if (dto.Name is not null)
-                existingProduct.Name = dto.Name;
+                product.Name = dto.Name;
+
             if (dto.Price is not null)
-                existingProduct.Price = dto.Price.Value;
+                product.Price = dto.Price.Value;
+
             if (dto.Stock is not null)
-                existingProduct.Stock = dto.Stock.Value;
+                product.Stock = dto.Stock.Value;
+
             if (dto.Category is not null)
-                existingProduct.Category = dto.Category;
-            if (dto.SupplierId is not null)
-                existingProduct.SupplierId = dto.SupplierId.Value;
+                product.Category = dto.Category;
 
-            await _repo.UpdateAsync(existingProduct);
+            // if (dto.SupplierId is not null)
+            //     product.SupplierId = dto.SupplierId.Value;
 
-            var result = new ProductReadDto
-            {
-                ProductId = existingProduct.ProductId,
-                Name = existingProduct.Name,
-                Price = existingProduct.Price,
-                Stock = existingProduct.Stock,
-                Category = existingProduct.Category,
-                SupplierId = existingProduct.SupplierId
-            };
+            await _repo.UpdateAsync(product);
 
-            return Ok(result);
+            return Ok(product.ToReadDto());
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -265,8 +195,8 @@ namespace ServerApp.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var existingProduct = await _repo.GetByIdAsync(id);
-            if (existingProduct is null)
+            var product = await _repo.GetByIdAsync(id);
+            if (product is null)
                 return NotFound(new { error = "Product not found" });
 
             await _repo.DeleteAsync(id);
