@@ -14,29 +14,21 @@ namespace ServerApp.Repositories
     {
 
         private readonly AppDbContext _db;
-        private readonly ILogger<ProductRepository> _logger;
 
-        public ProductRepository(AppDbContext db, ILogger<ProductRepository> logger)
+        public ProductRepository(AppDbContext db)
         {
             _db = db;
-            _logger = logger;
         }
 
         public async Task<IEnumerable<Product>> GetPaginatedAsync(int pageNumber, int pageSize)
         {
 
-            _logger.LogInformation("Fetching products page {PageNumber} with size {PageSize}", pageNumber, pageSize);
-
-            var products = await _db.Products
-            .Include(p => p.Supplier)
-            .OrderBy(p => p.ProductId)
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-            _logger.LogInformation("Fetched {Count} products", products.Count());
-
-            return products;
+            return await _db.Products
+                .Include(p => p.Supplier)
+                .OrderBy(p => p.ProductId)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
         }
 
         // Get total count of products for pagination
@@ -56,36 +48,14 @@ namespace ServerApp.Repositories
         public async Task<Product?> GetByIdAsync(int id)
         {
             return await _db.Products
-                            .Include(p => p.Supplier) // This is to include related Supplier data
+                            .Include(p => p.Supplier)
                             .FirstOrDefaultAsync(p => p.ProductId == id);
         }
 
         public async Task AddAsync(Product product)
         {
-            try
-            {
-                _logger.LogInformation("Adding product {@Product}", product);
-
-                if (product.SupplierId != 0)
-                {
-                    var supplier = await _db.Suppliers.FindAsync(product.SupplierId);
-                    if (supplier is null)
-                    {
-                        _logger.LogWarning("Invalid SupplierId {SupplierId} when adding product {@Product}", product.SupplierId, product);
-                        throw new InvalidOperationException("Invalid SupplierId.");
-                    }
-                }
-
-                _db.Products.Add(product);
-                await _db.SaveChangesAsync();
-
-                _logger.LogInformation("Product added successfully with ID {ProductId}", product.ProductId);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error adding product {@Product}", product);
-                throw;
-            }
+            _db.Products.Add(product);
+            await _db.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(Product product)
@@ -97,11 +67,11 @@ namespace ServerApp.Repositories
         public async Task DeleteAsync(int id)
         {
             var product = await _db.Products.FindAsync(id);
-            if (product is not null)
-            {
-                _db.Products.Remove(product);
-                await _db.SaveChangesAsync();
-            }
+            if (product is null)
+                return;
+
+            _db.Products.Remove(product);
+            await _db.SaveChangesAsync();
         }
 
         public async Task<bool> SupplierExistsAsync(int supplierId)
@@ -116,7 +86,7 @@ namespace ServerApp.Repositories
                 .Include(p => p.Supplier)
                 .AsQueryable();
 
-            
+
             if (!string.IsNullOrWhiteSpace(query))
                 products = products.Where(p => p.Name.Contains(query));
 

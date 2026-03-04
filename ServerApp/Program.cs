@@ -64,6 +64,7 @@ builder.Services.AddAuthorization();
 // Repositories Services
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 // Fluent Validation Service
 builder.Services.AddValidatorsFromAssemblyContaining<SharedApp.Validators.ProductValidator>();
