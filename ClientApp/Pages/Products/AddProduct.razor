@@ -8,8 +8,7 @@
 
 <ProductForm FormModel="@productForm" SubmitButtonText="Add Product" OnValidSubmitForm="HandleAdd" />
 
-@code
-{
+@code {
 
     private ProductFormModel productForm = new();
 
@@ -28,7 +27,7 @@
         var success = await ProductService.AddAsync(dto);
 
         if(success)
-            Navigation.NavigateTo("/products");
+            Navigation.NavigateTo("/products?added=true");
     }
 
 }

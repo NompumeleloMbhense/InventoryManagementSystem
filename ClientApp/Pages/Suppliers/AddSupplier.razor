@@ -32,9 +32,7 @@
 
 
         if (success)
-            Navigation.NavigateTo("/suppliers");
-        else
-            // Handle failure (e.g show an error message)
-            Console.WriteLine("Failed to add a supplier");
+            Navigation.NavigateTo("/suppliers?added=true");
+        
     }
 }

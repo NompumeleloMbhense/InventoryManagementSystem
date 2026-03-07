@@ -90,6 +90,24 @@
                         </div>
                     </div>
 
+                    <!-- Low Stock Card -->
+                    <div class="col-md-4">
+                        <div class="card dashboard-card shadow-sm border-0 rounded-4 p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="text-muted mb-1">Low Stock Products</h6>
+                                    <h2 class="fw-bold mb-0">@LowStockCount</h2>
+                                </div>
+                                <div class="icon-circle bg-danger-subtle text-danger">
+                                    <i class="bi bi-exclamation-triangle fs-4"></i>
+                                </div>
+                            </div>
+
+                            <NavLink href="/products" class="btn btn-sm btn-outline-danger mt-3 w-100">
+                                View Products
+                            </NavLink>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Quick Actions -->
@@ -203,6 +221,8 @@
     private int ProductsCount = 0;
     private int SuppliersCount = 0;
 
+    private int LowStockCount = 0;
+
     // Lists for recent activity display
     private List<ProductReadDto> RecentProducts = new();
     private List<SupplierReadDto> RecentSuppliers = new();
@@ -213,7 +233,7 @@
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
 
-        // Will load dashboard data only if user is authenticated
+        // Load dashboard data only if user is authenticated
         if (user.Identity?.IsAuthenticated == true)
         {
             // Extracting user's name from claims
@@ -226,9 +246,14 @@
             ProductsCount = await ProductService.GetTotalCountAsync();
             SuppliersCount = await SupplierService.GetTotalCountAsync();
 
+            var allProducts = await ProductService.GetPaginatedAsync(1, 1000);
+            LowStockCount = allProducts.Data.Count(p => p.Stock <= 5);
+
             // Fetch only the 3 most recent items instead of 1000 records
             RecentProducts = await ProductService.GetRecentAsync(3);
             RecentSuppliers = await SupplierService.GetRecentAsync(3);
+
+            
         }
 
         // Stop loading spinner
