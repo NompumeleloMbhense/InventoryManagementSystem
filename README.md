@@ -170,7 +170,7 @@ implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI
 ---
 
 ### Images 
-<img width="1898" height="863" alt="Dashboard" src="https://github.com/user-attachments/assets/03e5e436-b063-43e8-bd19-b0dac52585a1" />
+<img width="1900" height="867" alt="Dashboard" src="https://github.com/user-attachments/assets/4a13d8ad-d5c5-46fe-9bff-227bce9d34a4" />
 <img width="1912" height="858" alt="ProductsListPage" src="https://github.com/user-attachments/assets/d9a27488-1d73-4ffe-a7c8-bf9833b2bcc9" />
 <img width="1912" height="866" alt="ProductDetails" src="https://github.com/user-attachments/assets/6e335107-ad2d-4cbf-b587-4fad8c3d5e26" />
 <img width="1891" height="866" alt="UpdateProduct" src="https://github.com/user-attachments/assets/7e80ad09-0183-4714-8fa3-7c05c44344e4" />
