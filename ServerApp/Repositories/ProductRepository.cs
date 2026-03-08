@@ -96,5 +96,10 @@ namespace ServerApp.Repositories
             // Execute the query and return results
             return await products.ToListAsync();
         }
+
+        public async Task<int> GetLowStockCountAsync()
+            => await _db.Products.CountAsync(p => p.Stock <= 5);
+            
+        
     }
 }

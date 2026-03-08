@@ -14,6 +14,6 @@ namespace ServerApp.Services
         Task<IEnumerable<Product>> SearchAsync(string? query, string? category);
         Task<IEnumerable<Product>> GetRecentAsync(int count);
         Task<int> GetTotalCountAsync();
-
+        Task<int> GetLowStockCountAsync();
     }
 }

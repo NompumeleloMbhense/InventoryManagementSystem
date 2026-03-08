@@ -182,5 +182,14 @@ namespace ServerApp.Controllers
             var dtoList = products.Select(p => p.ToReadDto());
             return Ok(dtoList);
         }
+
+        // GET: api/products/lowstockcount
+        [AllowAnonymous]
+        [HttpGet("lowstockcount")]
+        public async Task<IActionResult> GetLowStockCount()
+        {
+            var count = await _service.GetLowStockCountAsync();
+            return Ok(count);
+        }
     }
 }

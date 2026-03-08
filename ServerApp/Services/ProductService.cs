@@ -107,8 +107,12 @@ namespace ServerApp.Services
          => await _repo.GetRecentAsync(count);
 
          public async Task<int> GetTotalCountAsync()
-        {
-            return await _repo.GetTotalCountAsync();
-        }
+            => await _repo.GetTotalCountAsync();
+        
+
+        public async Task<int> GetLowStockCountAsync()
+            => await _repo.GetLowStockCountAsync();
+        
+
     }
 }

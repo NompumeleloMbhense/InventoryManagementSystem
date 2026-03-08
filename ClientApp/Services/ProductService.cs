@@ -76,5 +76,9 @@ namespace ClientApp.Services
             return await _http.GetFromJsonAsync<List<ProductReadDto>>(
                                 $"api/products/recent/{count}");
         }
+
+        public async Task<int> GetLowStockCountAsync()
+            => await _http.GetFromJsonAsync<int>("api/products/lowstockcount");
+
     }
 }

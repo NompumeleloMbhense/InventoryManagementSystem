@@ -110,56 +110,58 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
-                <div class="mt-5">
 
-                    <h5 class="mb-3">Quick Actions</h5>
+                <!-- Quick Actions - Admins only-->
+                @if (user?.IsInRole("Admin") == true)
+                {
+                    <div class="mt-5">
 
-                    <div class="row g-3">
+                        <h5 class="mb-3">Quick Actions</h5>
 
-                        <!-- Add Product -->
-                        <div class="col-md-3">
-                            <NavLink href="/products/add" class="text-decoration-none">
-                                <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                    <i class="bi bi-plus-circle fs-2 text-primary mb-2"></i>
-                                    <div class="fw-semibold">Add Product</div>
-                                </div>
-                            </NavLink>
+                        <div class="row g-3">
+
+                            <!-- Add Product -->
+                            <div class="col-md-3">
+                                <NavLink href="/products/add" class="text-decoration-none">
+                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
+                                        <i class="bi bi-plus-circle fs-2 text-primary mb-2"></i>
+                                        <div class="fw-semibold">Add Product</div>
+                                    </div>
+                                </NavLink>
+                            </div>
+
+                            <!-- Add Supplier -->
+                            <div class="col-md-3">
+                                <NavLink href="/suppliers/add" class="text-decoration-none">
+                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
+                                        <i class="bi bi-person-plus fs-2 text-success mb-2"></i>
+                                        <div class="fw-semibold">Add Supplier</div>
+                                    </div>
+                                </NavLink>
+                            </div>
+
+                            <!-- Manage Products -->
+                            <div class="col-md-3">
+                                <NavLink href="/products" class="text-decoration-none">
+                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
+                                        <i class="bi bi-box-seam fs-2 text-primary mb-2"></i>
+                                        <div class="fw-semibold">Manage Products</div>
+                                    </div>
+                                </NavLink>
+                            </div>
+
+                            <!-- Manage Suppliers -->
+                            <div class="col-md-3">
+                                <NavLink href="/suppliers" class="text-decoration-none">
+                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
+                                        <i class="bi bi-people fs-2 text-success mb-2"></i>
+                                        <div class="fw-semibold">Manage Suppliers</div>
+                                    </div>
+                                </NavLink>
+                            </div>
                         </div>
-
-                        <!-- Add Supplier -->
-                        <div class="col-md-3">
-                            <NavLink href="/suppliers/add" class="text-decoration-none">
-                                <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                    <i class="bi bi-person-plus fs-2 text-success mb-2"></i>
-                                    <div class="fw-semibold">Add Supplier</div>
-                                </div>
-                            </NavLink>
-                        </div>
-
-                        <!-- View Products -->
-                        <div class="col-md-3">
-                            <NavLink href="/products" class="text-decoration-none">
-                                <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                    <i class="bi bi-box-seam fs-2 text-primary mb-2"></i>
-                                    <div class="fw-semibold">Manage Products</div>
-                                </div>
-                            </NavLink>
-                        </div>
-
-                        <!-- View Suppliers -->
-                        <div class="col-md-3">
-                            <NavLink href="/suppliers" class="text-decoration-none">
-                                <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                    <i class="bi bi-people fs-2 text-success mb-2"></i>
-                                    <div class="fw-semibold">Manage Suppliers</div>
-                                </div>
-                            </NavLink>
-                        </div>
-
                     </div>
-
-                </div>
+                }
 
 
                 <!-- Recent Activity -->
@@ -208,7 +210,6 @@
         }
 
     </Authorized>
-
 </AuthorizeView>
 
 @code
@@ -227,36 +228,29 @@
     private List<ProductReadDto> RecentProducts = new();
     private List<SupplierReadDto> RecentSuppliers = new();
 
+    private ClaimsPrincipal? user;
+
     protected override async Task OnInitializedAsync()
     {
-        // Getting the current authentication state from Blazor
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
+        user = (await AuthStateProvider.GetAuthenticationStateAsync()).User;
 
-        // Load dashboard data only if user is authenticated
         if (user.Identity?.IsAuthenticated == true)
         {
-            // Extracting user's name from claims
             userName = user.FindFirst("fullName")?.Value ??
-            user.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value ??
-            "User";
+                       user.FindFirst(ClaimTypes.Name)?.Value ?? "User";
 
-
-            // Fetch only the total counts (lightweight query)
+            
+            // Fetch counts from services
             ProductsCount = await ProductService.GetTotalCountAsync();
             SuppliersCount = await SupplierService.GetTotalCountAsync();
 
-            var allProducts = await ProductService.GetPaginatedAsync(1, 1000);
-            LowStockCount = allProducts.Data.Count(p => p.Stock <= 5);
+            // Fetch low stock count directly from server
+            LowStockCount = await ProductService.GetLowStockCountAsync();
 
-            // Fetch only the 3 most recent items instead of 1000 records
             RecentProducts = await ProductService.GetRecentAsync(3);
             RecentSuppliers = await SupplierService.GetRecentAsync(3);
-
-            
         }
 
-        // Stop loading spinner
         isLoading = false;
     }
 }

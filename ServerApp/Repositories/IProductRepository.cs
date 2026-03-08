@@ -19,5 +19,6 @@ namespace ServerApp.Repositories
         Task DeleteAsync(int id);
         Task<bool> SupplierExistsAsync(int supplierId);
         Task<IEnumerable<Product>> SearchAsync(string? query, string? category);
+        Task<int> GetLowStockCountAsync();
     }
 }
