@@ -170,12 +170,14 @@ implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI
 ---
 
 ### Images 
-<img width="1900" height="867" alt="Dashboard" src="https://github.com/user-attachments/assets/4a13d8ad-d5c5-46fe-9bff-227bce9d34a4" />
-<img width="1912" height="858" alt="ProductsListPage" src="https://github.com/user-attachments/assets/d9a27488-1d73-4ffe-a7c8-bf9833b2bcc9" />
+<img width="1893" height="860" alt="Dashboard" src="https://github.com/user-attachments/assets/0f429631-78d8-4c66-ae0b-077774f4ac27" />
+<img width="1888" height="858" alt="ProductsList" src="https://github.com/user-attachments/assets/5f2d6004-cc10-47e8-81a5-fcd13a23c587" />
 <img width="1912" height="866" alt="ProductDetails" src="https://github.com/user-attachments/assets/6e335107-ad2d-4cbf-b587-4fad8c3d5e26" />
 <img width="1891" height="866" alt="UpdateProduct" src="https://github.com/user-attachments/assets/7e80ad09-0183-4714-8fa3-7c05c44344e4" />
-<img width="1912" height="866" alt="SuppliersList" src="https://github.com/user-attachments/assets/897ee920-b9f7-4f67-8674-5ad9349a40d5" />
+<img width="1892" height="857" alt="SuppliersList" src="https://github.com/user-attachments/assets/50fa3486-c697-4c10-b48e-a368dfa0b7b1" />
 <img width="1896" height="865" alt="SupplierDetails" src="https://github.com/user-attachments/assets/1bdbfc5f-895d-474b-8c6f-132049564f7f" />
+<img width="1910" height="857" alt="ProductAddedConfirmation" src="https://github.com/user-attachments/assets/fa394729-f963-4b02-9a4d-37609896c944" />
+<img width="1907" height="863" alt="DeleteProductConfirmation" src="https://github.com/user-attachments/assets/c673335a-cee3-4e3c-9162-976f31b07f17" />
 <img width="1907" height="858" alt="Login" src="https://github.com/user-attachments/assets/f57d6577-e8da-4af2-adc4-7f8b0ed012a6" />
 
 
