@@ -10,7 +10,9 @@ namespace ServerApp.Data
 {
     public static class IdentitySeedData
     {
-        public static async Task SeedRolesAndUsersAsync(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager)
+        public static async Task SeedRolesAndUsersAsync(UserManager<AppUser> userManager,
+                                                        RoleManager<IdentityRole> roleManager,
+                                                        IConfiguration config)
         {
             // 1. Seed roles
             string[] roles = { "Admin", "User" };
@@ -23,7 +25,15 @@ namespace ServerApp.Data
             }
 
             // 2. Seed Admin user
-            var adminEmail = "admin@example.com";
+            var adminEmail = config["SeedUser:AdminEmail"];
+            var adminPassword = config["SeedUser:AdminPassword"];
+
+            // Safety Check
+            if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminPassword))
+            {
+                throw new Exception("Admin seed credentials are missing. Check user secrets.");
+            }
+
             if (await userManager.FindByEmailAsync(adminEmail) == null)
             {
                 var admin = new AppUser
@@ -32,13 +42,21 @@ namespace ServerApp.Data
                     Email = adminEmail,
                     FullName = "Administrator"
                 };
-                var result = await userManager.CreateAsync(admin, "Admin123!");
+                var result = await userManager.CreateAsync(admin, adminPassword);
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(admin, "Admin");
             }
 
             // 3. Seed regular User
-            var userEmail = "user@example.com";
+            var userEmail = config["SeedUser:UserEmail"];
+            var userPassword = config["SeedUser:UserPassword"];
+
+            // Safety Check
+            if (string.IsNullOrEmpty(userEmail) || string.IsNullOrEmpty(userPassword))
+            {
+                throw new Exception("User seed credentials are missing. Check user secrets.");
+            }
+
             if (await userManager.FindByEmailAsync(userEmail) == null)
             {
                 var user = new AppUser
@@ -47,7 +65,8 @@ namespace ServerApp.Data
                     Email = userEmail,
                     FullName = "Test User"
                 };
-                var result = await userManager.CreateAsync(user, "User123!");
+                var result = await userManager.CreateAsync(user, userPassword);
+                
                 if (result.Succeeded)
                     await userManager.AddToRoleAsync(user, "User");
             }

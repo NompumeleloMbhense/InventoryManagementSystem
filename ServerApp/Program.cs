@@ -160,8 +160,9 @@ using (var scope = app.Services.CreateScope())
 
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var config = services.GetRequiredService<IConfiguration>();
 
-    await IdentitySeedData.SeedRolesAndUsersAsync(userManager, roleManager);
+    await IdentitySeedData.SeedRolesAndUsersAsync(userManager, roleManager, config);
 }
 
 app.Run();
