@@ -5,54 +5,58 @@
 
 namespace SharedApp.Dto
 {
-    public class SupplierReadDto
-    {
+    public record SupplierReadDto
+    (
         // Used for listing suppliers (GET: api/suppliers)
-        public int SupplierId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-    }
+        int SupplierId,
+        string Name,
+        string Location,
+        string Email
+    );
 
     // Used for detailed view of a supplier with its products (GET: api/suppliers/{id})
-    public class SupplierWithProductsDto : SupplierReadDto
-    {
-        public List<ProductForSupplierDto> Products { get; set; } = new();
-    }
+    public record SupplierWithProductsDto
+    (
+        int SupplierId,
+        string Name,
+        string Location,
+        string Email,
+        List<ProductForSupplierDto> Products): SupplierReadDto(SupplierId, Name, Location, Email
+    );
 
     // Focused product info for supplier details
-    public class ProductForSupplierDto
-    {
-        public int ProductId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; } = string.Empty;
-        public bool Available { get; set; }
-    }
+    public record ProductForSupplierDto
+    (
+        int ProductId,
+        string Name,
+        decimal Price,
+        int Stock,
+        string Category,
+        bool Available
+    );
 
     // Used for creating a new supplier (POST: api/suppliers)
-    public class SupplierCreateDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-    }
+    public record SupplierCreateDto
+    (
+        string Name,
+        string Location,
+        string Email
+    );
 
     // Used for updating an existing supplier (PUT: api/suppliers/{id})
-    public class SupplierUpdateDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
-    }
-    
-     // Used for partial update (PATCH: api/suppliers/{id})
-    public class SupplierPatchDto
-    {
-        public string? Name { get; set; } 
-        public string? Location { get; set; }
-        public string? Email { get; set; }
-    }
+    public record SupplierUpdateDto
+    (
+        string Name,
+        string Location,
+        string Email
+    );
+
+    // Used for partial update (PATCH: api/suppliers/{id})
+    public record SupplierPatchDto
+    (
+        string? Name = null,
+        string? Location = null,
+        string? Email = null
+    );
 
 }

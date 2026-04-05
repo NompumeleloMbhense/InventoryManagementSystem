@@ -29,7 +29,7 @@ namespace ServerApp.Data
                         .HasOne(p => p.Supplier) // each Product has one Supplier
                         .WithMany(s => s.Products) // each Supplier has many Products
                         .HasForeignKey(p => p.SupplierId) // foreign key in Product table
-                        .OnDelete(DeleteBehavior.Cascade); // delete products when supplier is deleted
+                        .OnDelete(DeleteBehavior.Restrict); // Prevents accidental mass-deletion of inventory
 
             // specify precision for Price property
             modelBuilder.Entity<Product>()

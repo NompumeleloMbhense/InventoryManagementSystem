@@ -1,6 +1,12 @@
 using ServerApp.Repositories;
+using ServerApp.Helpers;
 using SharedApp.Dto;
 using SharedApp.Models;
+
+/// <summary>
+/// Service implemation for managing products, providing
+/// CRUD operations and additional functionalies like pagination and searching.
+/// </summary>
 
 namespace ServerApp.Services
 {
@@ -13,19 +19,45 @@ namespace ServerApp.Services
             _repo = repo;
         }
 
-        public async Task<Product> GetByIdAsync(int id)
+        // --- Helper Method (Internal use only) ---
+        // Retrieves the Product entity from the database by ID 
+        // and throws a KeyNotFoundException if it does not exist
+        private async Task<Product> GetProductEntityAsync(int id)
         {
             var product = await _repo.GetByIdAsync(id);
-            if (product is null)
-                throw new KeyNotFoundException("Product not found");
-
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {id} not found");
             return product;
         }
 
-        public async Task<Product> CreateAsync(ProductCreateDto dto)
+        // Gets a paginated list of products with total count for pagination data
+        public async Task<(IEnumerable<ProductReadDto> Products, int TotalCount)> GetPaginatedAsync(int pageNumber, int pageSize)
+        {
+            var products = await _repo.GetPaginatedAsync(pageNumber, pageSize);
+            var total = await _repo.GetTotalCountAsync();
+
+            var dtos = products.Select(p => p.ToReadDto());
+            return (dtos, total);
+        }
+
+        // Gets a single product by ID, including its supplier details
+        public async Task<ProductReadDto> GetByIdAsync(int id)
+        {
+            var product = await _repo.GetByIdAsync(id);
+
+            if (product == null)
+                throw new KeyNotFoundException("Product not found");
+
+            return product.ToReadDto();
+        }
+        
+        // Creates a new product from the provide DTO and 
+        // reurns the created product as a DTO,
+        // throws InvalidOperationException if the specified supplier does not exist
+        public async Task<ProductReadDto> CreateAsync(ProductCreateDto dto)
         {
             if (!await _repo.SupplierExistsAsync(dto.SupplierId))
-                throw new InvalidOperationException("Invalid SupplierId.");
+                throw new InvalidOperationException("Supplier does not exist");
 
             var product = new Product
             {
@@ -37,16 +69,24 @@ namespace ServerApp.Services
             };
 
             await _repo.AddAsync(product);
-            return product;
+
+            var created = await GetProductEntityAsync(product.ProductId);
+            return created.ToReadDto();
         }
 
-        public async Task<Product> UpdateAsync(int id, ProductUpdateDto dto)
+
+        // Updates an existing product with provided DTO data and 
+        // reurns the updated product as a DTO,
+        // throws KeyNotFoundException if the product does not exist
+        public async Task<ProductReadDto> UpdateAsync(int id, ProductUpdateDto dto)
         {
-            var product = await GetByIdAsync(id);
+            
+            var product = await GetProductEntityAsync(id);
 
             if (!await _repo.SupplierExistsAsync(dto.SupplierId))
                 throw new InvalidOperationException("Invalid SupplierId.");
 
+            // Update the Entity properties
             product.Name = dto.Name;
             product.Price = dto.Price;
             product.Stock = dto.Stock;
@@ -54,18 +94,20 @@ namespace ServerApp.Services
             product.SupplierId = dto.SupplierId;
 
             await _repo.UpdateAsync(product);
-            return product;
+            return product.ToReadDto();
         }
 
-        public async Task<Product> PatchAsync(int id, ProductPatchDto dto)
-        {
-            var product = await GetByIdAsync(id);
 
-            if (dto.SupplierId is not null)
+        // Partially updates an existing product with provided DTO data and 
+        // reruns the updated product as a DTO
+        public async Task<ProductReadDto> PatchAsync(int id, ProductPatchDto dto)
+        {
+            var product = await GetProductEntityAsync(id);
+
+            if (dto.SupplierId.HasValue)
             {
                 if (!await _repo.SupplierExistsAsync(dto.SupplierId.Value))
-                    throw new InvalidOperationException("Invalid SupplierId.");
-
+                    throw new InvalidOperationException("Supplier does not exist.");
                 product.SupplierId = dto.SupplierId.Value;
             }
 
@@ -82,37 +124,39 @@ namespace ServerApp.Services
                 product.Category = dto.Category;
 
             await _repo.UpdateAsync(product);
-            return product;
-
+            return product.ToReadDto();
         }
 
-
+        // Deletes a product by ID, throws 
+        // KeyNotFoundException if the product does not exist
         public async Task DeleteAsync(int id)
         {
-            var product = await GetByIdAsync(id);
-            await _repo.DeleteAsync(product.ProductId);
+            await GetProductEntityAsync(id);
+            await _repo.DeleteAsync(id);
         }
 
-        public async Task<(IEnumerable<Product>, int)> GetPaginatedAsync(int pageNumber, int pageSize)
+        // Searches products by name and/or category, returns matching 
+        // products as DTOs 
+        public async Task<IEnumerable<ProductReadDto>> SearchAsync(string? query, string? category)
         {
-            var products = await _repo.GetPaginatedAsync(pageNumber, pageSize);
-            var total = await _repo.GetTotalCountAsync();
-            return (products, total);
+            var results = await _repo.SearchAsync(query, category);
+            return results.Select(p => p.ToReadDto());
         }
 
-        public async Task<IEnumerable<Product>> SearchAsync(string? query, string? category)
-        => await _repo.SearchAsync(query, category);
+        // Gets the most recently added products, limited by the specified count
+        public async Task<IEnumerable<ProductReadDto>> GetRecentAsync(int count)
+        {
+            var results = await _repo.GetRecentAsync(count);
+            return results.Select(p => p.ToReadDto());
+        }
 
-        public async Task<IEnumerable<Product>> GetRecentAsync(int count)
-         => await _repo.GetRecentAsync(count);
+        // Gets the total count of products in the database 
+        public async Task<int> GetTotalCountAsync()
+           => await _repo.GetTotalCountAsync();
 
-         public async Task<int> GetTotalCountAsync()
-            => await _repo.GetTotalCountAsync();
-        
-
+        // Gets the count of products that are low in stock
         public async Task<int> GetLowStockCountAsync()
             => await _repo.GetLowStockCountAsync();
-        
 
     }
 }

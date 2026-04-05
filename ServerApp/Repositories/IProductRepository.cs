@@ -9,7 +9,7 @@ namespace ServerApp.Repositories
 {
     public interface IProductRepository
     {
-        //Task<IEnumerable<Product>> GetAllAsync();
+
         Task<IEnumerable<Product>> GetPaginatedAsync(int pageNumber, int pageSize);
         Task<int> GetTotalCountAsync();
         Task<IEnumerable<Product>> GetRecentAsync(int count);

@@ -24,6 +24,7 @@ namespace ServerApp.Repositories
         {
 
             return await _db.Products
+                .AsNoTracking() // Performance boost
                 .Include(p => p.Supplier)
                 .OrderBy(p => p.ProductId)
                 .Skip((pageNumber - 1) * pageSize)
@@ -32,14 +33,12 @@ namespace ServerApp.Repositories
         }
 
         // Get total count of products for pagination
-        public async Task<int> GetTotalCountAsync()
-        {
-            return await _db.Products.CountAsync();
-        }
-
+        public async Task<int> GetTotalCountAsync() => await _db.Products.CountAsync();
+        
         public async Task<IEnumerable<Product>> GetRecentAsync(int count)
         {
             return await _db.Products
+                    .AsNoTracking()
                     .OrderByDescending(p => p.ProductId)
                     .Take(count)
                     .ToListAsync();
@@ -75,31 +74,31 @@ namespace ServerApp.Repositories
         }
 
         public async Task<bool> SupplierExistsAsync(int supplierId)
-        {
-            return await _db.Suppliers.AnyAsync(s => s.SupplierId == supplierId);
-        }
+            => await _db.Suppliers.AnyAsync(s => s.SupplierId == supplierId);
+        
 
         public async Task<IEnumerable<Product>> SearchAsync(string? query, string? category)
         {
-            // Start with all products
-            var products = _db.Products
+            
+            var dbQuery = _db.Products
                 .Include(p => p.Supplier)
+                .AsNoTracking()
                 .AsQueryable();
 
 
             if (!string.IsNullOrWhiteSpace(query))
-                products = products.Where(p => p.Name.Contains(query));
+                dbQuery = dbQuery.Where(p => p.Name.Contains(query));
 
             if (!string.IsNullOrWhiteSpace(category))
-                products = products.Where(p => p.Category == category);
+                dbQuery = dbQuery.Where(p => p.Category == category);
 
             // Execute the query and return results
-            return await products.ToListAsync();
+            return await dbQuery.ToListAsync();
         }
 
         public async Task<int> GetLowStockCountAsync()
             => await _db.Products.CountAsync(p => p.Stock <= 5);
-            
-        
+
+
     }
 }

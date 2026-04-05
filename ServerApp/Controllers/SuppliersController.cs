@@ -1,10 +1,8 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using SharedApp.Validators;
-using SharedApp.Models;
-using SharedApp.Dto;
-using ServerApp.Repositories;
 using Microsoft.AspNetCore.Authorization;
+using ServerApp.Services;
+using SharedApp.Dto;
 
 /// <summary>
 /// Controller for managing suppliers.
@@ -17,118 +15,48 @@ namespace ServerApp.Controllers
     [Route("api/[controller]")]
     public class SuppliersController : ControllerBase
     {
-        private readonly ISupplierRepository _repo;
+        private readonly ISupplierService _service;
         private readonly IValidator<SupplierCreateDto> _createValidator;
         private readonly IValidator<SupplierUpdateDto> _updateValidator;
         private readonly IValidator<SupplierPatchDto> _patchValidator;
 
         public SuppliersController(
-           ISupplierRepository repo,
-           IValidator<SupplierCreateDto> createValidator,
-           IValidator<SupplierUpdateDto> updateValidator,
-           IValidator<SupplierPatchDto> patchValidator)
+                  ISupplierService service,
+                  IValidator<SupplierCreateDto> createValidator,
+                  IValidator<SupplierUpdateDto> updateValidator,
+                  IValidator<SupplierPatchDto> patchValidator)
         {
-            _repo = repo;
+            _service = service;
             _createValidator = createValidator;
             _updateValidator = updateValidator;
             _patchValidator = patchValidator;
         }
 
-        public IActionResult Index()
-        {
-            return Ok("Suppliers API is running...");
-        }
-
-        // GET: api/suppliers
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1,
-                                                 [FromQuery] int pageSize = 10,
-                                                 [FromQuery] string? searchTerm = null)
+        public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
         {
-            if (pageNumber < 1 || pageSize < 1)
-                return BadRequest(new { error = "PageNumber and PageSize must be greater than 0" });
-
-            var suppliers = await _repo.GetPaginatedAsync(pageNumber, pageSize, searchTerm);
-            var totalCount = await _repo.GetTotalCountAsync(searchTerm);
-
-            var response = new
-            {
-                Data = suppliers.Select(s => new SupplierReadDto
-                {
-                    SupplierId = s.SupplierId,
-                    Name = s.Name,
-                    Location = s.Location,
-                    Email = s.Email
-                }),
-                TotalCount = totalCount,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
-            };
-
-            return Ok(response);
+            var (suppliers, totalCount) = await _service.GetPaginatedAsync(pageNumber, pageSize, searchTerm);
+            
+            return Ok(new { Data = suppliers, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize });
         }
 
-        // GET: api/suppliers/5
-        [AllowAnonymous]
+
+         [AllowAnonymous]
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
-        {
-            var supplier = await _repo.GetByIdAsync(id);
-            if (supplier is null)
-                return NotFound(new { error = "Supplier not found" });
+        public async Task<IActionResult> GetById(int id) 
+            => Ok(await _service.GetByIdAsync(id));
 
-
-            // Map to SupplierWithProductsDto so that when you request
-            // a supplier, the response will include the products
-            var result = new SupplierWithProductsDto
-            {
-                SupplierId = supplier.SupplierId,
-                Name = supplier.Name,
-                Location = supplier.Location,
-                Email = supplier.Email,
-                Products = supplier.Products.Select(p => new ProductForSupplierDto
-                {
-                    ProductId = p.ProductId,
-                    Name = p.Name,
-                    Price = p.Price,
-                    Stock = p.Stock,
-                    Category = p.Category,
-                    Available = p.Available
-                }).ToList()
-            };
-
-            return Ok(result);
-        }
+        
 
         // POST: api/suppliers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(SupplierCreateDto dto)
         {
-            var validationResult = _createValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors);
-
-            var supplier = new Supplier
-            {
-                Name = dto.Name,
-                Location = dto.Location,
-                Email = dto.Email
-            };
-
-            await _repo.AddAsync(supplier);
-
-            var result = new SupplierReadDto
-            {
-                SupplierId = supplier.SupplierId,
-                Name = supplier.Name,
-                Location = supplier.Location,
-                Email = supplier.Email
-            };
-
-            return CreatedAtAction(nameof(GetById), new { id = supplier.SupplierId }, result);
+            await _createValidator.ValidateAndThrowAsync(dto); // Throws if invalid
+            var result = await _service.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = result.SupplierId }, result);
         }
 
 
@@ -137,30 +65,8 @@ namespace ServerApp.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, SupplierUpdateDto dto)
         {
-            var existingSupplier = await _repo.GetByIdAsync(id);
-            if (existingSupplier is null)
-                return NotFound(new { error = "Supplier not found" });
-
-            var validationResult = _updateValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors);
-
-            // Update fields, if provided
-            existingSupplier.Name = dto.Name;
-            existingSupplier.Location = dto.Location;
-            existingSupplier.Email = dto.Email;
-
-            await _repo.UpdateAsync(existingSupplier);
-
-            var result = new SupplierReadDto
-            {
-                SupplierId = existingSupplier.SupplierId,
-                Name = existingSupplier.Name,
-                Location = existingSupplier.Location,
-                Email = existingSupplier.Email
-            };
-
-            return Ok(result);
+            await _updateValidator.ValidateAndThrowAsync(dto);
+            return Ok(await _service.UpdateAsync(id, dto));
         }
 
 
@@ -169,34 +75,8 @@ namespace ServerApp.Controllers
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, SupplierPatchDto dto)
         {
-            var existingSupplier = await _repo.GetByIdAsync(id);
-            if (existingSupplier is null)
-                return NotFound(new { error = "Supplier not found" });
-
-            var validationResult = _patchValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors);
-
-            if (dto.Name is not null)
-                existingSupplier.Name = dto.Name;
-
-            if (dto.Location is not null)
-                existingSupplier.Location = dto.Location;
-
-            if (dto.Email is not null)
-                existingSupplier.Email = dto.Email;
-
-            await _repo.UpdateAsync(existingSupplier);
-
-            var result = new SupplierReadDto
-            {
-                SupplierId = existingSupplier.SupplierId,
-                Name = existingSupplier.Name,
-                Location = existingSupplier.Location,
-                Email = existingSupplier.Email
-            };
-
-            return Ok(result);
+            await _patchValidator.ValidateAndThrowAsync(dto);
+            return Ok(await _service.PatchAsync(id, dto));
         }
 
         // DELETE: api/suppliers/5
@@ -204,48 +84,25 @@ namespace ServerApp.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try
-            {
-                // call the repository to delete the supplier
-                var deleted = await _repo.DeleteAsync(id);
-                if (!deleted)
-                    return NotFound(new { message = "Supplier not found" }); // Supplier not found
-
-                // Successfully deleted
-                return NoContent();
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Handle the case where the supplier has associated products
-                return BadRequest(new { error = ex.Message });
-            }
-
+            await _service.DeleteAsync(id);
+            return NoContent();
         }
 
         // GET: api/suppliers/count
         [HttpGet("count")]
         public async Task<ActionResult<int>> GetTotalCount()
         {
-            var count = await _repo.GetTotalCountAsync();
+            var count = await _service.GetTotalCountAsync();
             return Ok(count);
         }
 
         // GET: api/suppliers/recent/{count}
         [HttpGet("recent/{count}")]
-        public async Task<ActionResult<IEnumerable<SupplierReadDto>>> GetRecent(int count)
+        public async Task<ActionResult> GetRecent(int count)
         {
-            var suppliers = await _repo.GetRecentAsync(count);
-            // Map to DTO
-            var dtoList = suppliers.Select(s => new SupplierReadDto
-            {
-                SupplierId = s.SupplierId,
-                Name = s.Name,
-                Email = s.Email,
-                Location = s.Location
-            });
-            return Ok(dtoList);
+            var results = await _service.GetRecentAsync(count);
+            
+            return Ok(results);
         }
-
-
     }
 }

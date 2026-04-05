@@ -10,65 +10,53 @@ namespace ServerApp.Data
 {
     public static class IdentitySeedData
     {
-        public static async Task SeedRolesAndUsersAsync(UserManager<AppUser> userManager,
-                                                        RoleManager<IdentityRole> roleManager,
-                                                        IConfiguration config)
+        public static async Task SeedRolesAndUsersAsync(
+            UserManager<AppUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            IConfiguration config)
         {
-            // 1. Seed roles
+            // 1. Seed Roles
             string[] roles = { "Admin", "User" };
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
-                {
                     await roleManager.CreateAsync(new IdentityRole(role));
-                }
             }
 
-            // 2. Seed Admin user
-            var adminEmail = config["SeedUser:AdminEmail"];
-            var adminPassword = config["SeedUser:AdminPassword"];
+            // 2. Seed Admin
+            await CreateUserIfNotExists(userManager, config, "AdminEmail", "AdminPassword", "Administrator", "Admin");
 
-            // Safety Check
-            if (string.IsNullOrEmpty(adminEmail) || string.IsNullOrEmpty(adminPassword))
-            {
-                throw new Exception("Admin seed credentials are missing. Check user secrets.");
-            }
+            // 3. Seed Regular User
+            await CreateUserIfNotExists(userManager, config, "UserEmail", "UserPassword", "Test User", "User");
+        }
 
-            if (await userManager.FindByEmailAsync(adminEmail) == null)
-            {
-                var admin = new AppUser
-                {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    FullName = "Administrator"
-                };
-                var result = await userManager.CreateAsync(admin, adminPassword);
-                if (result.Succeeded)
-                    await userManager.AddToRoleAsync(admin, "Admin");
-            }
+        private static async Task CreateUserIfNotExists(
+            UserManager<AppUser> userManager,
+            IConfiguration config,
+            string emailKey,
+            string passwordKey,
+            string fullName,
+            string role)
+        {
+            var email = config[$"SeedUser:{emailKey}"];
+            var password = config[$"SeedUser:{passwordKey}"];
 
-            // 3. Seed regular User
-            var userEmail = config["SeedUser:UserEmail"];
-            var userPassword = config["SeedUser:UserPassword"];
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+                return; // Skip if config is missing rather than crashing the whole app
 
-            // Safety Check
-            if (string.IsNullOrEmpty(userEmail) || string.IsNullOrEmpty(userPassword))
-            {
-                throw new Exception("User seed credentials are missing. Check user secrets.");
-            }
-
-            if (await userManager.FindByEmailAsync(userEmail) == null)
+            if (await userManager.FindByEmailAsync(email) == null)
             {
                 var user = new AppUser
                 {
-                    UserName = userEmail,
-                    Email = userEmail,
-                    FullName = "Test User"
+                    UserName = email,
+                    Email = email,
+                    FullName = fullName,
+                    EmailConfirmed = true // Useful for bypassing verification in dev
                 };
-                var result = await userManager.CreateAsync(user, userPassword);
-                
+
+                var result = await userManager.CreateAsync(user, password);
                 if (result.Succeeded)
-                    await userManager.AddToRoleAsync(user, "User");
+                    await userManager.AddToRoleAsync(user, role);
             }
         }
     }

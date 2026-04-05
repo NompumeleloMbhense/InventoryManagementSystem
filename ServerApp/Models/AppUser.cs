@@ -8,7 +8,7 @@ namespace ServerApp.Models
 {
     public class AppUser : IdentityUser
     {
-        public string? FullName { get; set; }
+        public required string FullName { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
     }

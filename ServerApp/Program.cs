@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using FluentValidation;
 using Serilog;
+using System.Text;
 using ServerApp.Data;
 using ServerApp.Repositories;
 using SharedApp.Validators;
@@ -11,13 +12,23 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ServerApp.Services;
+using ServerApp.Middleware;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
+// -- 1. LOGGING (Serilog) --
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+// --- 2. CORE SERVICES ---
 builder.Services.AddControllers();
 
-// Single DB for both app data and users
+// Database configuration 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("InventoryDBConnection")));
 
@@ -27,12 +38,14 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 
-// JWT authentication configuration
+// --- 3. AUTHENTICATION & JWT
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["Key"] ?? "A_Very_Long_Default_Secret_Key_For_Development_Only";
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; // JWT as default scheme
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme; // JWT as default challenge scheme
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme; 
 })
 .AddJwtBearer(options =>
 {
@@ -44,27 +57,21 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtSettings["Issuer"],
         ValidAudience = jwtSettings["Audience"],
-        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+        IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
     };
-});
-
-// Password policy configuration for identity
-builder.Services.Configure<IdentityOptions>(options =>
-{
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequiredLength = 8;
 });
 
 builder.Services.AddAuthorization();
 
 
-// Repositories Services
+// --- 4. Dependency Injection (Repositories and Services) ---
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
+builder.Services.AddScoped<JwtTokenService>();
 
 // Fluent Validation Service
 builder.Services.AddValidatorsFromAssemblyContaining<SharedApp.Validators.ProductValidator>();
@@ -73,95 +80,51 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        policy.WithOrigins("http://localhost:5065")
+        policy.AllowAnyOrigin()
         .AllowAnyHeader()
         .AllowAnyMethod();
     });
 });
 
-// Serilog configuration for logging to console and file
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-
-builder.Host.UseSerilog();
-
-builder.Services.AddScoped<JwtTokenService>();
+// Password policy configuration for identity
+// builder.Services.Configure<IdentityOptions>(options =>
+// {
+//     options.Password.RequireDigit = true;
+//     options.Password.RequireLowercase = true;
+//     options.Password.RequireUppercase = true;
+//     options.Password.RequireNonAlphanumeric = true;
+//     options.Password.RequiredLength = 8;
+// });
 
 var app = builder.Build();
 
 
-// Global error handler for bad requests and unhandled exceptions
-app.UseExceptionHandler(errorApp =>
-{
-    errorApp.Run(async context =>
-    {
-        var logger = context.RequestServices
-            .GetRequiredService<ILogger<Program>>();
+// 5. GLOBAL EXCEPTION HANDLER
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
-        var exceptionFeature = context.Features
-            .Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature>();
-
-        var exception = exceptionFeature?.Error;
-
-        if (exception == null)
-            return;
-
-        logger.LogError(exception, "Unhandled exception occurred.");
-
-        context.Response.ContentType = "application/json";
-
-        switch (exception)
-        {
-            case KeyNotFoundException:
-                context.Response.StatusCode = StatusCodes.Status404NotFound;
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = exception.Message
-                });
-                break;
-            case InvalidOperationException:
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = exception.Message
-                });
-                break;
-
-            default:
-                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                await context.Response.WriteAsJsonAsync(new
-                {
-                    error = "An unexpected server error occurred."
-                });
-                break;
-        }
-    });
-});
-
+// 6. MIDDLEWARE PIPELINE
 app.UseRouting();
-
 app.UseCors();
-
 app.UseAuthentication();
 app.UseAuthorization();
 
-
 app.MapControllers();
 
-// Seed initial data
+// 7. DATA SEEDING
 SeedData.EnsurePopulated(app);
 
 // Seed roles & users
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    
+    // Seed Business Data
+    SeedData.EnsurePopulated(app); 
 
+    // Seed Identity Data
     var userManager = services.GetRequiredService<UserManager<AppUser>>();
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var config = services.GetRequiredService<IConfiguration>();
-
     await IdentitySeedData.SeedRolesAndUsersAsync(userManager, roleManager, config);
 }
 

@@ -5,44 +5,43 @@
 
 namespace SharedApp.Dto
 {
-    public class ProductReadDto
-    {
-        public int ProductId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; } = string.Empty;
-        public bool Available { get; set; }
-        public int SupplierId { get; set; }
-        public string SupplierName { get; set; } = string.Empty;
-        public string SupplierLocation { get; set; } = string.Empty;
-    }
+    public record ProductReadDto
+    (
+        int ProductId, 
+        string Name, 
+        decimal Price,
+        int Stock,
+        string Category,
+        bool Available,
+        int SupplierId,
+        string SupplierName,
+        string SupplierLocation
+    );
 
-    public class ProductCreateDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; } = string.Empty;
-        public int SupplierId { get; set; }
-    }
+    public record ProductCreateDto
+    (
+        string Name,
+        decimal Price,
+        int Stock,
+        string Category,
+        int SupplierId
+    );
 
-    public class ProductUpdateDto
-    {
-        public string Name { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int Stock { get; set; }
-        public string Category { get; set; } = string.Empty;
-        public int SupplierId { get; set; }
-    }
+    public record ProductUpdateDto
+    (
+        string Name,
+        decimal Price,
+        int Stock,
+        string Category,
+        int SupplierId
+    );
 
-    public class ProductPatchDto
-    {
-        public string? Name { get; set; }
-        public decimal? Price { get; set; }
-        public int? Stock { get; set; }
-        public string? Category { get; set; }
-        public bool? Available { get; set; }
-        public int? SupplierId { get; set; }
-    }
+    public record ProductPatchDto
+    (
+        string? Name = null,
+        decimal? Price = null,
+        int? Stock = null,
+        string? Category = null,
+        int? SupplierId = null
+    );
 }

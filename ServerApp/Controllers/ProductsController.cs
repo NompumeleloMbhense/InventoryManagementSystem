@@ -5,7 +5,6 @@ using SharedApp.Validators;
 using SharedApp.Models;
 using SharedApp.Dto;
 using ServerApp.Repositories;
-using ServerApp.Mappings;
 using ServerApp.Services;
 
 /// <summary>
@@ -58,7 +57,7 @@ namespace ServerApp.Controllers
 
             return Ok(new
             {
-                Data = products.Select(p => p.ToReadDto()),
+                Data = products,
                 TotalCount = totalCount,
                 PageNumber = pageNumber,
                 PageSize = pageSize,
@@ -71,10 +70,9 @@ namespace ServerApp.Controllers
         [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
-        {
-            var product = await _service.GetByIdAsync(id);
-            return Ok(product.ToReadDto());
-        }
+           => Ok(await _service.GetByIdAsync(id));
+
+
 
         // WRITE endpoints - Require login (JWT)
         // ADMIN ONLY: Create Product
@@ -83,16 +81,15 @@ namespace ServerApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ProductCreateDto dto)
         {
-            var validationResult = _createValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors);
+            await _createValidator.ValidateAndThrowAsync(dto);
 
-            var product = await _service.CreateAsync(dto);
+
+
+            var result = await _service.CreateAsync(dto);
 
             return CreatedAtAction(
                nameof(GetById),
-               new { id = product.ProductId },
-               product.ToReadDto());
+               new { id = result.ProductId }, result);
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -102,29 +99,23 @@ namespace ServerApp.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, ProductUpdateDto dto)
         {
-            var validationResult = _updateValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors);
+            await _updateValidator.ValidateAndThrowAsync(dto);
 
-            var product = await _service.UpdateAsync(id, dto);
-            return Ok(product.ToReadDto());
+            var result = await _service.UpdateAsync(id, dto);
+            return Ok(result);
 
         }
 
         // WRITE endpoints - Require login (JWT)
-        // USER: Only allowed to update Stock
-        // ADMIN: Allowed to update all fields
         // PATCH: api/products/5
         [Authorize]
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, ProductPatchDto dto)
         {
-            var validationResult = _patchValidator.Validate(dto);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors);
+            await _patchValidator.ValidateAndThrowAsync(dto);
 
-            var product = await _service.PatchAsync(id, dto);
-            return Ok(product.ToReadDto());
+            var result = await _service.PatchAsync(id, dto);
+            return Ok(result);
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -144,23 +135,9 @@ namespace ServerApp.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string? query, [FromQuery] string? category)
         {
-            var products = await _service.SearchAsync(query, category);
-
-
-            var result = products.Select(p => new
-            {
-                p.ProductId,
-                p.Name,
-                p.Price,
-                p.Stock,
-                p.Category,
-                p.Available,
-                p.SupplierId,
-                SupplierName = p.Supplier?.Name ?? string.Empty,
-                SupplierLocation = p.Supplier?.Location ?? string.Empty
-            });
-
-            return Ok(result);
+            var results = await _service.SearchAsync(query, category);
+           
+            return Ok(results);
         }
 
 
@@ -179,8 +156,8 @@ namespace ServerApp.Controllers
         public async Task<IActionResult> GetRecent(int count)
         {
             var products = await _service.GetRecentAsync(count);
-            var dtoList = products.Select(p => p.ToReadDto());
-            return Ok(dtoList);
+            
+            return Ok(products);
         }
 
         // GET: api/products/lowstockcount

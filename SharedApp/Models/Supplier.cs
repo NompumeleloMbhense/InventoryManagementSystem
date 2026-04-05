@@ -7,9 +7,9 @@ namespace SharedApp.Models
     public class Supplier
     {
         public int SupplierId { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public string Email { get; set; } = string.Empty;
+        public required string Name { get; set; }
+        public required string Location { get; set; }
+        public required string Email { get; set; }
         public List<Product> Products { get; set; } = new();
     }
 }
