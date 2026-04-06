@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 /// <summary>
 /// Data Transfer Objects for Product entity.
 /// Shared by both ServerApp and ClientApp
@@ -23,10 +25,22 @@ namespace SharedApp.Dto
     // 2. Used for creating a new product (POST: api/products)
     public record ProductCreateDto
     {
+        [Required(ErrorMessage = "Product name is required")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters")]
         public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Price is required")]
+        [Range(0.01, 1000000, ErrorMessage = "Price must be greater than 0")]
         public decimal Price { get; set; }
+
+        [Required(ErrorMessage = "Stock is required")]
+        [Range(0, 10000, ErrorMessage = "Stock cannot be negative")]
         public int Stock { get; set; }
+
+        [Required(ErrorMessage = "Please select a category")]
         public string Category { get; set; } = string.Empty;
+
+        [Range(1, int.MaxValue, ErrorMessage = "Please select a valid supplier")]
         public int SupplierId { get; set; }
     }
 

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 
 /// <summary>
 /// Data Transfer Objects for Supplier entity.
@@ -35,8 +36,16 @@ namespace SharedApp.Dto
     //4. Used for creating a new supplier (POST: api/suppliers)
     public record SupplierCreateDto
     {
+        [Required(ErrorMessage = "Supplier name is required")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Name must be between 2 and 100 characters")]
         public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Location is required")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Location must be between 2 and 100 characters")]
         public string Location { get; set; } = string.Empty;
+        
+        [Required(ErrorMessage = "Email is required")]
+        [EmailAddress(ErrorMessage = "Invalid email format")]
         public string Email { get; set; } = string.Empty;
     }
 
