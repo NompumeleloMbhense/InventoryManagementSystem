@@ -1,33 +1,18 @@
 @page "/products/add"
-@using ClientApp.Models
+@using SharedApp.Dto
 @using ClientApp.Services
 @inject NavigationManager Navigation
 @inject ProductService ProductService
 
-<h3>Add Product</h3>
-
-<ProductForm FormModel="@productForm" SubmitButtonText="Add Product" OnValidSubmitForm="HandleAdd" />
+<h3 class="mb-4">Add Product</h3>
+<ProductForm FormModel="product" SubmitButtonText="Create Product" OnValidSubmitForm="HandleAdd" />
 
 @code {
+    private ProductCreateDto product = new();
 
-    private ProductFormModel productForm = new();
-
-    private async Task HandleAdd(ProductFormModel model)
+    private async Task HandleAdd()
     {
-        // Call the service to add the product
-        var dto = new ProductCreateDto
-        {
-            Name = model.Name,
-            Price = model.Price,
-            Stock = model.Stock,
-            Category = model.Category,
-            SupplierId = model.SupplierId
-        };
-
-        var success = await ProductService.AddAsync(dto);
-
-        if(success)
-            Navigation.NavigateTo("/products?added=true");
+        var success = await ProductService.CreateAsync(product);
+        if (success) Navigation.NavigateTo("/products?added=true");
     }
-
 }

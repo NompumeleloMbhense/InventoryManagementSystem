@@ -1,38 +1,18 @@
 @page "/suppliers/add"
-@using ClientApp.Models
+@using SharedApp.Dto
 @using ClientApp.Services
 @inject SupplierService SupplierService
 @inject NavigationManager Navigation
 
-<h3 class="text-2xl font-semibold mb-3">Add Supplier</h3>
+<h3 class="mb-4">Add New Supplier</h3>
+<SupplierForm FormModel="supplier" SubmitButtonText="Create Supplier" OnValidSubmitForm="HandleAdd" />
 
-<SupplierForm FormModel="@supplierForm" SubmitButtonText="Add Supplier" OnValidSubmitForm="HandleAdd" />
+@code {
+    private SupplierCreateDto supplier = new();
 
-@code
-{
-    private SupplierFormModel supplierForm = new();
-    
-
-    // It is an async method because in a real application,
-    // you need to not block the UI thread while waiting for the server response
-    //
-    private async Task HandleAdd(SupplierFormModel model)
+    private async Task HandleAdd()
     {
-        
-        // Assign the form model data to the DTO
-        // and call the service to add the supplier
-        var dto = new SupplierCreateDto
-        {
-            Name = model.Name,
-            Location = model.Location,
-            Email = model.Email
-        };
-
-        var success = await SupplierService.CreateAsync(dto);
-
-
-        if (success)
-            Navigation.NavigateTo("/suppliers?added=true");
-        
+        var success = await SupplierService.CreateAsync(supplier);
+        if (success) Navigation.NavigateTo("/suppliers?added=true");
     }
 }

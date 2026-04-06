@@ -1,254 +1,215 @@
 @page "/"
+@using SharedApp.Dto
 @using ClientApp.Services
-@using ClientApp.Models
 @using ClientApp.Services.Auth
 @using Microsoft.AspNetCore.Components.Authorization
 @using System.Security.Claims
-@inject AuthTokenService TokenService
-@inject NavigationManager Navigation
 @inject ProductService ProductService
 @inject SupplierService SupplierService
 @inject AuthenticationStateProvider AuthStateProvider
 
-
-<AuthorizeView>
-
-    <!--NOT AUTHENTICATED -->
-    <NotAuthorized>
+@if (!isAuthenticated)
+{
+    @* --- LANDING PAGE FOR GUESTS --- *@
+    <div class="text-center mt-5 py-5">
+        <h1 class="display-4 text-primary fw-bold">
+            Welcome to Product & Supplier Manager
+        </h1>
+        <p class="lead text-secondary mb-4">
+            Keep your inventory organized and your suppliers up to date. All in one place.
+        </p>
+        <div class="d-flex justify-content-center gap-3">
+            <NavLink href="/login" class="btn btn-primary btn-lg px-5 shadow-sm">Login</NavLink>
+            <NavLink href="/register" class="btn btn-outline-secondary btn-lg px-5">Register</NavLink>
+        </div>
+    </div>
+}
+else
+{
+    @* --- DASHBOARD FOR AUTHENTICATED USERS --- *@
+    @if (isLoading)
+    {
         <div class="text-center mt-5">
-            <h1 class="display-4 text-primary fw-bold">
-                Welcome to Product & Supplier Manager
-            </h1>
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted mt-2">Loading your dashboard...</p>
+        </div>
+    }
+    else
+    {
+        <div class="container-fluid py-4">
+            <h2 class="fw-bold mb-1">
+                Welcome back, <span class="text-primary">@userName</span>
+            </h2>
+            <p class="text-muted mb-4">Here's a quick overview of your system.</p>
 
-            <p class="lead text-secondary mb-4">
-                Keep your inventory organized and your suppliers up to date. All in one place.
-            </p>
+            <!-- Stats Cards -->
+            <div class="row g-4 mb-5">
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1 small text-uppercase">Total Products</h6>
+                                <h2 class="fw-bold mb-0">@ProductsCount</h2>
+                            </div>
+                            <div class="icon-circle bg-primary-subtle text-primary" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-box-seam fs-4"></i>
+                            </div>
+                        </div>
+                        <NavLink href="/products" class="btn btn-sm btn-outline-primary mt-3 w-100">View Products</NavLink>
+                    </div>
+                </div>
 
-            <div class="d-flex justify-content-center gap-3">
-                <NavLink href="/login" class="btn btn-primary btn-lg">Login</NavLink>
-                <NavLink href="/register" class="btn btn-outline-secondary btn-lg">Register</NavLink>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1 small text-uppercase">Total Suppliers</h6>
+                                <h2 class="fw-bold mb-0">@SuppliersCount</h2>
+                            </div>
+                            <div class="icon-circle bg-success-subtle text-success" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-people fs-4"></i>
+                            </div>
+                        </div>
+                        <NavLink href="/suppliers" class="btn btn-sm btn-outline-success mt-3 w-100">View Suppliers</NavLink>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 rounded-4 p-3 h-100">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1 small text-uppercase">Low Stock Alert</h6>
+                                <h2 class="fw-bold mb-0 @(LowStockCount > 0 ? "text-danger" : "")">@LowStockCount</h2>
+                            </div>
+                            <div class="icon-circle bg-danger-subtle text-danger" style="width:48px; height:48px; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                                <i class="bi bi-exclamation-triangle fs-4"></i>
+                            </div>
+                        </div>
+                        <NavLink href="/products" class="btn btn-sm btn-outline-danger mt-3 w-100">View Inventory</NavLink>
+                    </div>
+                </div>
+            </div>
+
+            @if (isAdmin)
+            {
+                <!-- Quick Actions Section -->
+                <div class="mb-5">
+                    <h5 class="fw-bold mb-3">Quick Actions</h5>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <NavLink href="/products/add" class="text-decoration-none">
+                                <div class="card shadow-sm border-0 text-center p-3 h-100 hover-shadow">
+                                    <i class="bi bi-plus-circle fs-2 text-primary mb-2"></i>
+                                    <div class="fw-semibold text-dark">Add Product</div>
+                                </div>
+                            </NavLink>
+                        </div>
+                        <div class="col-md-3">
+                            <NavLink href="/suppliers/add" class="text-decoration-none">
+                                <div class="card shadow-sm border-0 text-center p-3 h-100 hover-shadow">
+                                    <i class="bi bi-person-plus fs-2 text-success mb-2"></i>
+                                    <div class="fw-semibold text-dark">Add Supplier</div>
+                                </div>
+                            </NavLink>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="row g-4">
+                <!-- Recent Products -->
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-3">Recent Products</h5>
+                    <div class="list-group shadow-sm">
+                        @if (RecentProducts.Any())
+                        {
+                            @foreach (var p in RecentProducts)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">@p.Name</div>
+                                        <small class="text-muted">R @p.Price.ToString("N2")</small>
+                                    </div>
+                                    <span class="badge bg-primary rounded-pill">@p.Category</span>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="list-group-item text-muted">No products found.</div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Recent Suppliers -->
+                <div class="col-md-6">
+                    <h5 class="fw-bold mb-3">Top Suppliers</h5>
+                    <div class="list-group shadow-sm">
+                        @if (RecentSuppliers.Any())
+                        {
+                            @foreach (var s in RecentSuppliers)
+                            {
+                                <div class="list-group-item d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <div class="fw-bold">@s.Name</div>
+                                        <small class="text-muted">@s.Location</small>
+                                    </div>
+                                    <small class="text-primary">@s.Email</small>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="list-group-item text-muted">No suppliers found.</div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
-    </NotAuthorized>
+    }
+}
 
-    <!--AUTHENTICATED -->
-    <Authorized>
-
-        @if (isLoading)
-        {
-            <p class="text-center mt-5"><em>Loading dashboard...</em></p>
-        }
-        else
-        {
-            <div class="container mt-5">
-
-                <h2 class="fw-bold mb-2">
-                    Welcome back,
-                    <span class="text-primary">@userName</span>
-                </h2>
-
-                <p class="text-muted">
-                    Here's a quick overview of your system.
-                </p>
-
-                <!-- Dashboard Cards -->
-                <div class="row g-4 mt-4">
-
-                    <!-- Products Card -->
-                    <div class="col-md-4">
-                        <div class="card dashboard-card shadow-sm border-0 rounded-4 p-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-1">Total Products</h6>
-                                    <h2 class="fw-bold mb-0">@ProductsCount</h2>
-                                </div>
-                                <div class="icon-circle bg-primary-subtle text-primary">
-                                    <i class="bi bi-box-seam fs-4"></i>
-                                </div>
-                            </div>
-                            <NavLink href="/products" class="btn btn-sm btn-outline-primary mt-3 w-100">
-                                View Products
-                            </NavLink>
-                        </div>
-                    </div>
-
-                    <!-- Suppliers Card -->
-                    <div class="col-md-4">
-                        <div class="card dashboard-card shadow-sm border-0 rounded-4 p-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-1">Total Suppliers</h6>
-                                    <h2 class="fw-bold mb-0">@SuppliersCount</h2>
-                                </div>
-                                <div class="icon-circle bg-success-subtle text-success">
-                                    <i class="bi bi-people fs-4"></i>
-                                </div>
-                            </div>
-                            <NavLink href="/suppliers" class="btn btn-sm btn-outline-success mt-3 w-100">
-                                View Suppliers
-                            </NavLink>
-                        </div>
-                    </div>
-
-                    <!-- Low Stock Card -->
-                    <div class="col-md-4">
-                        <div class="card dashboard-card shadow-sm border-0 rounded-4 p-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="text-muted mb-1">Low Stock Products</h6>
-                                    <h2 class="fw-bold mb-0">@LowStockCount</h2>
-                                </div>
-                                <div class="icon-circle bg-danger-subtle text-danger">
-                                    <i class="bi bi-exclamation-triangle fs-4"></i>
-                                </div>
-                            </div>
-
-                            <NavLink href="/products" class="btn btn-sm btn-outline-danger mt-3 w-100">
-                                View Products
-                            </NavLink>
-                        </div>
-                    </div>
-                </div>
-
-
-                <!-- Quick Actions - Admins only-->
-                @if (user?.IsInRole("Admin") == true)
-                {
-                    <div class="mt-5">
-
-                        <h5 class="mb-3">Quick Actions</h5>
-
-                        <div class="row g-3">
-
-                            <!-- Add Product -->
-                            <div class="col-md-3">
-                                <NavLink href="/products/add" class="text-decoration-none">
-                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                        <i class="bi bi-plus-circle fs-2 text-primary mb-2"></i>
-                                        <div class="fw-semibold">Add Product</div>
-                                    </div>
-                                </NavLink>
-                            </div>
-
-                            <!-- Add Supplier -->
-                            <div class="col-md-3">
-                                <NavLink href="/suppliers/add" class="text-decoration-none">
-                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                        <i class="bi bi-person-plus fs-2 text-success mb-2"></i>
-                                        <div class="fw-semibold">Add Supplier</div>
-                                    </div>
-                                </NavLink>
-                            </div>
-
-                            <!-- Manage Products -->
-                            <div class="col-md-3">
-                                <NavLink href="/products" class="text-decoration-none">
-                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                        <i class="bi bi-box-seam fs-2 text-primary mb-2"></i>
-                                        <div class="fw-semibold">Manage Products</div>
-                                    </div>
-                                </NavLink>
-                            </div>
-
-                            <!-- Manage Suppliers -->
-                            <div class="col-md-3">
-                                <NavLink href="/suppliers" class="text-decoration-none">
-                                    <div class="card shadow-sm border-0 text-center p-3 quick-action-card">
-                                        <i class="bi bi-people fs-2 text-success mb-2"></i>
-                                        <div class="fw-semibold">Manage Suppliers</div>
-                                    </div>
-                                </NavLink>
-                            </div>
-                        </div>
-                    </div>
-                }
-
-
-                <!-- Recent Activity -->
-                <div class="mt-5">
-
-                    <h5 class="mb-3">Recent Products</h5>
-
-                    @if (RecentProducts.Any())
-                    {
-                        <ul class="list-group mb-4">
-                            @foreach (var product in RecentProducts)
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    @product.Name
-                                    <span class="badge bg-primary">@product.Category</span>
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p>No recent products.</p>
-                    }
-
-                    <h5 class="mb-3">Recent Suppliers</h5>
-
-                    @if (RecentSuppliers.Any())
-                    {
-                        <ul class="list-group mb-4">
-                            @foreach (var supplier in RecentSuppliers)
-                            {
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    @supplier.Name
-                                    <span class="badge bg-success">@supplier.Email</span>
-                                </li>
-                            }
-                        </ul>
-                    }
-                    else
-                    {
-                        <p>No recent suppliers.</p>
-                    }
-
-                </div>
-            </div>
-        }
-
-    </Authorized>
-</AuthorizeView>
-
-@code
-{
+@code {
     private bool isLoading = true;
-
-    // Stores the logged-in user's display name
+    private bool isAuthenticated = false;
+    private bool isAdmin = false;
     private string userName = "User";
 
     private int ProductsCount = 0;
     private int SuppliersCount = 0;
-
     private int LowStockCount = 0;
 
-    // Lists for recent activity display
     private List<ProductReadDto> RecentProducts = new();
     private List<SupplierReadDto> RecentSuppliers = new();
 
-    private ClaimsPrincipal? user;
-
     protected override async Task OnInitializedAsync()
     {
-        user = (await AuthStateProvider.GetAuthenticationStateAsync()).User;
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
 
-        if (user.Identity?.IsAuthenticated == true)
+        isAuthenticated = user.Identity?.IsAuthenticated ?? false;
+
+        if (isAuthenticated)
         {
-            userName = user.FindFirst("fullName")?.Value ??
-                       user.FindFirst(ClaimTypes.Name)?.Value ?? "User";
+            isAdmin = user.IsInRole("Admin");
+            userName = user.FindFirst("fullName")?.Value 
+                       ?? user.FindFirst(ClaimTypes.Name)?.Value 
+                       ?? "User";
 
-            
-            // Fetch counts from services
-            ProductsCount = await ProductService.GetTotalCountAsync();
-            SuppliersCount = await SupplierService.GetTotalCountAsync();
+            // Run API calls in parallel for better performance
+            var pCountTask = ProductService.GetTotalCountAsync();
+            var sCountTask = SupplierService.GetTotalCountAsync();
+            var lowStockTask = ProductService.GetLowStockCountAsync();
+            var recentPTask = ProductService.GetRecentAsync(5);
+            var recentSTask = SupplierService.GetRecentAsync(5);
 
-            // Fetch low stock count directly from server
-            LowStockCount = await ProductService.GetLowStockCountAsync();
+            await Task.WhenAll(pCountTask, sCountTask, lowStockTask, recentPTask, recentSTask);
 
-            RecentProducts = await ProductService.GetRecentAsync(3);
-            RecentSuppliers = await SupplierService.GetRecentAsync(3);
+            ProductsCount = await pCountTask;
+            SuppliersCount = await sCountTask;
+            LowStockCount = await lowStockTask;
+            RecentProducts = await recentPTask;
+            RecentSuppliers = await recentSTask;
         }
 
         isLoading = false;

@@ -1,5 +1,5 @@
 using System.Net.Http.Json;
-using ClientApp.Models;
+using SharedApp.Dto; 
 
 /// <summary>
 /// Service for managing suppliers.
@@ -17,14 +17,12 @@ namespace ClientApp.Services
             _http = http;
         }
 
-        // Get paginated suppliers using PagedResponse<T>
-        public async Task<PagedResponse<SupplierReadDto>?> GetPaginatedAsync(int pageNumber = 1,
-                                                                             int pageSize = 5,
-                                                                             string? searchTerm = null)
+        public async Task<PagedResponse<SupplierReadDto>> GetPaginatedAsync(
+            int pageNumber = 1, 
+            int pageSize = 5, 
+            string? searchTerm = null)
         {
-
             var url = $"api/suppliers?pageNumber={pageNumber}&pageSize={pageSize}";
-
 
             if (!string.IsNullOrWhiteSpace(searchTerm))
             {
@@ -35,36 +33,27 @@ namespace ClientApp.Services
 
             return response ?? new PagedResponse<SupplierReadDto>
             {
-                Data = new List<SupplierReadDto>(),
+                Data = Enumerable.Empty<SupplierReadDto>(),
                 PageNumber = pageNumber,
-                PageSize = pageSize,
-                TotalCount = 0,
-                TotalPages = 0
+                PageSize = pageSize
             };
         }
 
-
-        // Get single supplier with its products
         public async Task<SupplierWithProductsDto?> GetByIdAsync(int id)
-        {
-            return await _http.GetFromJsonAsync<SupplierWithProductsDto>($"api/suppliers/{id}");
-        }
+            => await _http.GetFromJsonAsync<SupplierWithProductsDto>($"api/suppliers/{id}");
 
-        // Create a supplier
         public async Task<bool> CreateAsync(SupplierCreateDto dto)
         {
             var response = await _http.PostAsJsonAsync("api/suppliers", dto);
             return response.IsSuccessStatusCode;
         }
 
-        // Update a supplier
         public async Task<bool> UpdateAsync(int id, SupplierUpdateDto dto)
         {
             var response = await _http.PutAsJsonAsync($"api/suppliers/{id}", dto);
             return response.IsSuccessStatusCode;
         }
 
-        // Delete a supplier
         public async Task<bool> DeleteAsync(int id)
         {
             var response = await _http.DeleteAsync($"api/suppliers/{id}");
@@ -72,14 +61,10 @@ namespace ClientApp.Services
         }
 
         public async Task<int> GetTotalCountAsync()
-        {
-            return await _http.GetFromJsonAsync<int>("api/suppliers/count");
-        }
+            => await _http.GetFromJsonAsync<int>("api/suppliers/count");
 
         public async Task<List<SupplierReadDto>> GetRecentAsync(int count)
-        {
-            return await _http.GetFromJsonAsync<List<SupplierReadDto>>($"api/suppliers/recent/{count}");
-        }
-
+            => await _http.GetFromJsonAsync<List<SupplierReadDto>>($"api/suppliers/recent/{count}") 
+               ?? new List<SupplierReadDto>();
     }
 }

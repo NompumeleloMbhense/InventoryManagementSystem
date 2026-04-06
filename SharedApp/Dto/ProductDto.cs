@@ -1,47 +1,45 @@
 /// <summary>
 /// Data Transfer Objects for Product entity.
-/// Includes DTOs for reading, creating, updating and patching products.
+/// Shared by both ServerApp and ClientApp
 /// </summary>
 
 namespace SharedApp.Dto
 {
+    // 1. Used for listing products and getting product details
+    // (GET: api/products and GET: api/products/{id})
     public record ProductReadDto
-    (
-        int ProductId, 
-        string Name, 
-        decimal Price,
-        int Stock,
-        string Category,
-        bool Available,
-        int SupplierId,
-        string SupplierName,
-        string SupplierLocation
-    );
+    {
+        public int ProductId { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public bool Available { get; set; }
+        public int SupplierId { get; set; }
+        public string SupplierName { get; set; } = string.Empty;
+        public string SupplierLocation { get; set; } = string.Empty;
+    }
 
+    // 2. Used for creating a new product (POST: api/products)
     public record ProductCreateDto
-    (
-        string Name,
-        decimal Price,
-        int Stock,
-        string Category,
-        int SupplierId
-    );
+    {
+        public string Name { get; set; } = string.Empty;
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public string Category { get; set; } = string.Empty;
+        public int SupplierId { get; set; }
+    }
 
-    public record ProductUpdateDto
-    (
-        string Name,
-        decimal Price,
-        int Stock,
-        string Category,
-        int SupplierId
-    );
+    // 3. Used for updating an exixting product
+    public record ProductUpdateDto : ProductCreateDto { }
 
+    // 4. Used for partial update (PATCH: api/products/{id})
     public record ProductPatchDto
-    (
-        string? Name = null,
-        decimal? Price = null,
-        int? Stock = null,
-        string? Category = null,
-        int? SupplierId = null
-    );
+    {
+        public string? Name { get; set; }
+        public decimal? Price { get; set; }
+        public int? Stock { get; set; }
+        public string? Category { get; set; }
+        public int? SupplierId { get; set; }
+    }
 }

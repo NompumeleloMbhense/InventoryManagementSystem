@@ -11,40 +11,47 @@ namespace ServerApp.Helpers
 {
     public static class MappingExtensions
     {
-        // Product Mappings
-        public static ProductReadDto ToReadDto(this Product p) => new(
-            p.ProductId,
-            p.Name,
-            p.Price,
-            p.Stock,
-            p.Category,
-            p.Available,
-            p.SupplierId,
-            p.Supplier?.Name ?? "N/A",
-            p.Supplier?.Location ?? "N/A"
-        );
+        //1. Product Mappings
+        public static ProductReadDto ToReadDto(this Product p) => new()
+        {
+            ProductId = p.ProductId,
+            Name = p.Name,
+            Price = p.Price,
+            Stock = p.Stock,
+            Category = p.Category,
+            Available = p.Available,
+            SupplierId = p.SupplierId,
+            SupplierName = p.Supplier?.Name ?? "N/A",
+            SupplierLocation = p.Supplier?.Location ?? "N/A"
+        };
 
-        // Supplier Mappings
-        public static SupplierReadDto ToReadDto(this Supplier s) => new(
-            s.SupplierId,
-            s.Name,
-            s.Location,
-            s.Email
-        );
 
-        public static SupplierWithProductsDto ToDetailedDto(this Supplier s) => new(
-            s.SupplierId,
-            s.Name,
-            s.Location,
-            s.Email,
-            s.Products.Select(p => new ProductForSupplierDto(
-                p.ProductId,
-                p.Name,
-                p.Price,
-                p.Stock,
-                p.Category,
-                p.Available
-            )).ToList()
-        );
+        // 2. Supplier Mappings
+        public static SupplierReadDto ToReadDto(this Supplier s) => new()
+        {
+            SupplierId = s.SupplierId,
+            Name = s.Name,
+            Location = s.Location,
+            Email = s.Email
+        };
+
+
+        // 3. Detailed Supplier Mapping including products
+        public static SupplierWithProductsDto ToDetailedDto(this Supplier s) => new()
+        {
+            SupplierId = s.SupplierId,
+            Name = s.Name,
+            Location = s.Location,
+            Email = s.Email,
+            Products = s.Products.Select(p => new ProductForSupplierDto
+            {
+                ProductId = p.ProductId,
+                Name = p.Name,
+                Price = p.Price,
+                Stock = p.Stock,
+                Category = p.Category,
+                Available = p.Available
+            }).ToList()
+        };
     }
 }
