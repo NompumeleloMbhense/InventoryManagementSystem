@@ -44,8 +44,8 @@ var secretKey = jwtSettings["Key"] ?? "A_Very_Long_Default_Secret_Key_For_Develo
 
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme; 
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme; 
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 })
 .AddJwtBearer(options =>
 {
@@ -71,7 +71,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 
-builder.Services.AddScoped<JwtTokenService>();
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 // Fluent Validation Service
 builder.Services.AddValidatorsFromAssemblyContaining<SharedApp.Validators.ProductValidator>();
@@ -117,9 +117,9 @@ SeedData.EnsurePopulated(app);
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    
+
     // Seed Business Data
-    SeedData.EnsurePopulated(app); 
+    SeedData.EnsurePopulated(app);
 
     // Seed Identity Data
     var userManager = services.GetRequiredService<UserManager<AppUser>>();

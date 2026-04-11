@@ -14,7 +14,7 @@ using System.Text;
 
 namespace ServerApp.Services
 {
-    public class JwtTokenService
+    public class JwtTokenService : IJwtTokenService
     {
         private readonly IConfiguration _config;
         private readonly UserManager<AppUser> _userManager;

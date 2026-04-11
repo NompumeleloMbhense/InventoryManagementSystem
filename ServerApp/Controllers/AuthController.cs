@@ -19,12 +19,12 @@ namespace ServerApp.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly IConfiguration _config;
-        private readonly JwtTokenService _jwtService;
+        private readonly IJwtTokenService _jwtService;
 
 
         public AuthController(UserManager<AppUser> userManager,
                                 IConfiguration config,
-                                JwtTokenService jwtService)
+                                IJwtTokenService jwtService)
         {
             _userManager = userManager;
             _config = config;

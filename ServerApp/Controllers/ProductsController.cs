@@ -81,9 +81,14 @@ namespace ServerApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(ProductCreateDto dto)
         {
-            await _createValidator.ValidateAndThrowAsync(dto);
+            // 1. Explicitly call the validator (Easier to test!)
+            var validationResult = await _createValidator.ValidateAsync(dto);
 
-
+            // 2. If it's not valid, throw the exception ourselves
+            if (!validationResult.IsValid)
+            {
+                throw new ValidationException(validationResult.Errors);
+            }
 
             var result = await _service.CreateAsync(dto);
 
@@ -99,11 +104,13 @@ namespace ServerApp.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, ProductUpdateDto dto)
         {
-            await _updateValidator.ValidateAndThrowAsync(dto);
+            // Validate the incoming DTO
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid) 
+                throw new ValidationException(validationResult.Errors);
 
             var result = await _service.UpdateAsync(id, dto);
             return Ok(result);
-
         }
 
         // WRITE endpoints - Require login (JWT)
@@ -112,7 +119,9 @@ namespace ServerApp.Controllers
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, ProductPatchDto dto)
         {
-            await _patchValidator.ValidateAndThrowAsync(dto);
+            var validationResult = await _patchValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid) 
+                throw new ValidationException(validationResult.Errors);
 
             var result = await _service.PatchAsync(id, dto);
             return Ok(result);
@@ -136,7 +145,7 @@ namespace ServerApp.Controllers
         public async Task<IActionResult> Search([FromQuery] string? query, [FromQuery] string? category)
         {
             var results = await _service.SearchAsync(query, category);
-           
+
             return Ok(results);
         }
 
@@ -156,7 +165,7 @@ namespace ServerApp.Controllers
         public async Task<IActionResult> GetRecent(int count)
         {
             var products = await _service.GetRecentAsync(count);
-            
+
             return Ok(products);
         }
 

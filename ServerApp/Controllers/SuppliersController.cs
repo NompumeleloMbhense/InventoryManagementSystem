@@ -37,24 +37,27 @@ namespace ServerApp.Controllers
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
         {
             var (suppliers, totalCount) = await _service.GetPaginatedAsync(pageNumber, pageSize, searchTerm);
-            
+
             return Ok(new { Data = suppliers, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize });
         }
 
 
-         [AllowAnonymous]
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id) 
-            => Ok(await _service.GetByIdAsync(id));
+        public async Task<IActionResult> GetById(int id)
+           => Ok(await _service.GetByIdAsync(id));
 
-        
+
 
         // POST: api/suppliers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(SupplierCreateDto dto)
         {
-            await _createValidator.ValidateAndThrowAsync(dto); // Throws if invalid
+            var validationResult = await _createValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
             var result = await _service.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = result.SupplierId }, result);
         }
@@ -65,8 +68,13 @@ namespace ServerApp.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, SupplierUpdateDto dto)
         {
-            await _updateValidator.ValidateAndThrowAsync(dto);
-            return Ok(await _service.UpdateAsync(id, dto));
+            var validationResult = await _updateValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+            var result = await _service.UpdateAsync(id, dto);
+
+            return Ok(result);
         }
 
 
@@ -75,8 +83,12 @@ namespace ServerApp.Controllers
         [HttpPatch("{id:int}")]
         public async Task<IActionResult> Patch(int id, SupplierPatchDto dto)
         {
-            await _patchValidator.ValidateAndThrowAsync(dto);
-            return Ok(await _service.PatchAsync(id, dto));
+            var validationResult = await _patchValidator.ValidateAsync(dto);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+            var result = await _service.PatchAsync(id, dto);
+            return Ok(result);
         }
 
         // DELETE: api/suppliers/5
@@ -90,7 +102,7 @@ namespace ServerApp.Controllers
 
         // GET: api/suppliers/count
         [HttpGet("count")]
-        public async Task<ActionResult<int>> GetTotalCount()
+        public async Task<IActionResult> GetTotalCount()
         {
             var count = await _service.GetTotalCountAsync();
             return Ok(count);
@@ -98,10 +110,10 @@ namespace ServerApp.Controllers
 
         // GET: api/suppliers/recent/{count}
         [HttpGet("recent/{count}")]
-        public async Task<ActionResult> GetRecent(int count)
+        public async Task<IActionResult> GetRecent(int count)
         {
             var results = await _service.GetRecentAsync(count);
-            
+
             return Ok(results);
         }
     }
