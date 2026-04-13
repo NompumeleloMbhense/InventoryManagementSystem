@@ -15,6 +15,7 @@ featuring JWT-based user authentication and role-based authorization.
 -   **Dashboard**: A welcoming dashboard for authenticated users that provides a quick overview of total products and suppliers.
 -   **Clean Architecture**: The solution is separated into three distinct projects (`ServerApp`, `ClientApp`, `SharedApp`) for maintainability and separation of concerns.
 -   **Database Seeding**: The application automatically seeds the database with initial data (roles, users, products, suppliers) on startup for easy setup and testing.
+-   **Automated Unit Testing**: High-coverage test suite ensuring the reliability of business logic and API reliability.
 
 ---
 
@@ -39,6 +40,8 @@ The application is structured into three main projects to enforce a clean separa
     -   Domain models (`Product`, `Supplier`).
     -   Data Transfer Objects (DTOs) for API communication.
     -   Validation rules using FluentValidation to ensure consistency on both client and server.
+      
+- **InventorySystem.Tests**: An xUnit testing project that utilizes Moq to isolate and verify the behavior of Services and Controllers.
 
 ---
 
@@ -46,6 +49,7 @@ The application is structured into three main projects to enforce a clean separa
 
 - **Frontend:** Blazor WebAssembly
 - **Backend:** ASP.NET Core 8 Web API
+- **Testing:** xUnit, Moq
 - **Database:** SQL Server
 - **ORM:** Entity Framework Core
 - **Authentication:** ASP.NET Identity with JWT
@@ -126,26 +130,22 @@ The app seeds initial users:
 ### Challenges & How I Overcame Them
 
 **Challenge:**
-- My navbar did not update automatically after login or logout. I initially tried using manual state tracking with events.
+- Nesting <AuthorizeView> tags caused the compiler to crash because it couldn't differentiate between multiple context variables.
 
 **Solution:**
-- I replaced manual boolean tracking with <AuthorizeView>, which listens to authentication state changes automatically. After
-implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI updated instantly without manual refreshes.
+- Switched to a C# Logic Approach in the UI. By using @if (isAuthenticated) and @if (isAdmin), I removed the variable naming
+  conflict entirely.
 
 **What I Learned:**
-- AuthorizeView reacts to authentication state
-- Proper separation of concerns simplifies UI logic
-- Blazor’s built-in authorization system should be leveraged instead of reinvented
+-  Sometimes standard C# logic is more robust than specialized framework tags, especially in complex layouts.
 
 **Challenge:**
-  - Initially, validation logic can easily become cluttered inside controllers or components, making code harder to maintain and test.
+  - I was maintaining separate models in the ClientApp and SharedApp.
 
 **Solution:**
-  - I implemented FluentValidation to centralize validation rules in dedicated validator classes.
+  - Deleted duplicate models and unified everything into the SharedApp. I refactored them from positional records to
+    property-based records to support Blazor's two-way data binding.
 
-**What I learned:**
-  - Keeps validation logic separate from business logic
-  - Reusable across endpoints
 
 **Challenge:**
   - At first, it was tempting to return database entities directly from the API to the frontend.
@@ -163,8 +163,8 @@ implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI
 ### Future Improvements
 
     - Add refresh tokens to avoid frequent logins.
-    - Add unit and integration tests for API endpoints.
     - Add sorting and advanced filtering for products and suppliers.
+    - Audit Logs: Track which users made specific changes to inventory stock.
     - Enhance UI with more modern styling and mobile responsiveness.
 
 ---
