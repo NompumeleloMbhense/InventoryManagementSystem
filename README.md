@@ -169,16 +169,33 @@ The app seeds initial users:
 
 ---
 
-### Images 
-<img width="1893" height="860" alt="Dashboard" src="https://github.com/user-attachments/assets/0f429631-78d8-4c66-ae0b-077774f4ac27" />
-<img width="1888" height="858" alt="ProductsList" src="https://github.com/user-attachments/assets/5f2d6004-cc10-47e8-81a5-fcd13a23c587" />
-<img width="1912" height="866" alt="ProductDetails" src="https://github.com/user-attachments/assets/6e335107-ad2d-4cbf-b587-4fad8c3d5e26" />
-<img width="1891" height="866" alt="UpdateProduct" src="https://github.com/user-attachments/assets/7e80ad09-0183-4714-8fa3-7c05c44344e4" />
-<img width="1892" height="857" alt="SuppliersList" src="https://github.com/user-attachments/assets/50fa3486-c697-4c10-b48e-a368dfa0b7b1" />
-<img width="1896" height="865" alt="SupplierDetails" src="https://github.com/user-attachments/assets/1bdbfc5f-895d-474b-8c6f-132049564f7f" />
-<img width="1910" height="857" alt="ProductAddedConfirmation" src="https://github.com/user-attachments/assets/fa394729-f963-4b02-9a4d-37609896c944" />
-<img width="1907" height="863" alt="DeleteProductConfirmation" src="https://github.com/user-attachments/assets/c673335a-cee3-4e3c-9162-976f31b07f17" />
-<img width="1907" height="858" alt="Login" src="https://github.com/user-attachments/assets/f57d6577-e8da-4af2-adc4-7f8b0ed012a6" />
+### Images
+
+<img width="800" height="360" alt="AdminLogin" src="https://github.com/user-attachments/assets/43a94b17-a137-421c-abe8-23213e64b53f" />
+
+
+<img width="800" height="364" alt="Dashboard" src="https://github.com/user-attachments/assets/13591dad-6ba9-4a69-a3ac-34784ceaafe2" />
+
+
+<img width="800" height="362" alt="SearchProduct" src="https://github.com/user-attachments/assets/144a7174-535e-4616-994d-43f32122f0f5" />
+
+
+<img width="800" height="364" alt="AddProduct" src="https://github.com/user-attachments/assets/7f5e08cc-3e27-4830-ad1e-2e74abd0b694" />
+
+
+<img width="800" height="364" alt="ProductDetails" src="https://github.com/user-attachments/assets/fb3a621f-3726-4e94-b142-0e09ce25508e" />
+
+
+<img width="800" height="363" alt="UpdateProduct" src="https://github.com/user-attachments/assets/9086d39f-72b4-47bd-956c-2e39e576dcd7" />
+
+
+<img width="800" height="365" alt="DeleteProduct" src="https://github.com/user-attachments/assets/d3145f7e-0dff-4985-a535-679150b9387e" />
+
+
+<img width="1916" height="864" alt="SuppliersList" src="https://github.com/user-attachments/assets/41ddae83-2d89-4652-bf99-067a599b12b6" />
+
+
+<img width="800" height="361" alt="DeleteSupplierWithProducts" src="https://github.com/user-attachments/assets/ed68983c-8cff-46d0-876d-daa7b297b844" />
 
 
 ---
