@@ -15,6 +15,7 @@ featuring JWT-based user authentication and role-based authorization.
 -   **Dashboard**: A welcoming dashboard for authenticated users that provides a quick overview of total products and suppliers.
 -   **Clean Architecture**: The solution is separated into three distinct projects (`ServerApp`, `ClientApp`, `SharedApp`) for maintainability and separation of concerns.
 -   **Database Seeding**: The application automatically seeds the database with initial data (roles, users, products, suppliers) on startup for easy setup and testing.
+-   **Automated Unit Testing**: High-coverage test suite ensuring the reliability of business logic and API reliability.
 
 ---
 
@@ -39,6 +40,8 @@ The application is structured into three main projects to enforce a clean separa
     -   Domain models (`Product`, `Supplier`).
     -   Data Transfer Objects (DTOs) for API communication.
     -   Validation rules using FluentValidation to ensure consistency on both client and server.
+      
+- **InventorySystem.Tests**: An xUnit testing project that utilizes Moq to isolate and verify the behavior of Services and Controllers.
 
 ---
 
@@ -46,6 +49,7 @@ The application is structured into three main projects to enforce a clean separa
 
 - **Frontend:** Blazor WebAssembly
 - **Backend:** ASP.NET Core 8 Web API
+- **Testing:** xUnit, Moq
 - **Database:** SQL Server
 - **ORM:** Entity Framework Core
 - **Authentication:** ASP.NET Identity with JWT
@@ -126,26 +130,22 @@ The app seeds initial users:
 ### Challenges & How I Overcame Them
 
 **Challenge:**
-- My navbar did not update automatically after login or logout. I initially tried using manual state tracking with events.
+- Nesting <AuthorizeView> tags caused the compiler to crash because it couldn't differentiate between multiple context variables.
 
 **Solution:**
-- I replaced manual boolean tracking with <AuthorizeView>, which listens to authentication state changes automatically. After
-implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI updated instantly without manual refreshes.
+- Switched to a C# Logic Approach in the UI. By using @if (isAuthenticated) and @if (isAdmin), I removed the variable naming
+  conflict entirely.
 
 **What I Learned:**
-- AuthorizeView reacts to authentication state
-- Proper separation of concerns simplifies UI logic
-- Blazor’s built-in authorization system should be leveraged instead of reinvented
+-  Sometimes standard C# logic is more robust than specialized framework tags, especially in complex layouts.
 
 **Challenge:**
-  - Initially, validation logic can easily become cluttered inside controllers or components, making code harder to maintain and test.
+  - I was maintaining separate models in the ClientApp and SharedApp.
 
 **Solution:**
-  - I implemented FluentValidation to centralize validation rules in dedicated validator classes.
+  - Deleted duplicate models and unified everything into the SharedApp. I refactored them from positional records to
+    property-based records to support Blazor's two-way data binding.
 
-**What I learned:**
-  - Keeps validation logic separate from business logic
-  - Reusable across endpoints
 
 **Challenge:**
   - At first, it was tempting to return database entities directly from the API to the frontend.
@@ -163,22 +163,50 @@ implementing NotifyAuthenticationStateChanged() correctly in my provider, the UI
 ### Future Improvements
 
     - Add refresh tokens to avoid frequent logins.
-    - Add unit and integration tests for API endpoints.
     - Add sorting and advanced filtering for products and suppliers.
+    - Audit Logs: Track which users made specific changes to inventory stock.
     - Enhance UI with more modern styling and mobile responsiveness.
 
 ---
 
-### Images 
-<img width="1893" height="860" alt="Dashboard" src="https://github.com/user-attachments/assets/0f429631-78d8-4c66-ae0b-077774f4ac27" />
-<img width="1888" height="858" alt="ProductsList" src="https://github.com/user-attachments/assets/5f2d6004-cc10-47e8-81a5-fcd13a23c587" />
-<img width="1912" height="866" alt="ProductDetails" src="https://github.com/user-attachments/assets/6e335107-ad2d-4cbf-b587-4fad8c3d5e26" />
-<img width="1891" height="866" alt="UpdateProduct" src="https://github.com/user-attachments/assets/7e80ad09-0183-4714-8fa3-7c05c44344e4" />
-<img width="1892" height="857" alt="SuppliersList" src="https://github.com/user-attachments/assets/50fa3486-c697-4c10-b48e-a368dfa0b7b1" />
-<img width="1896" height="865" alt="SupplierDetails" src="https://github.com/user-attachments/assets/1bdbfc5f-895d-474b-8c6f-132049564f7f" />
-<img width="1910" height="857" alt="ProductAddedConfirmation" src="https://github.com/user-attachments/assets/fa394729-f963-4b02-9a4d-37609896c944" />
-<img width="1907" height="863" alt="DeleteProductConfirmation" src="https://github.com/user-attachments/assets/c673335a-cee3-4e3c-9162-976f31b07f17" />
-<img width="1907" height="858" alt="Login" src="https://github.com/user-attachments/assets/f57d6577-e8da-4af2-adc4-7f8b0ed012a6" />
+### Images
+
+<img width="800" height="360" alt="AdminLogin" src="https://github.com/user-attachments/assets/43a94b17-a137-421c-abe8-23213e64b53f" />
+
+
+
+
+<img width="800" height="364" alt="Dashboard" src="https://github.com/user-attachments/assets/13591dad-6ba9-4a69-a3ac-34784ceaafe2" />
+
+
+
+
+<img width="800" height="362" alt="SearchProduct" src="https://github.com/user-attachments/assets/144a7174-535e-4616-994d-43f32122f0f5" />
+
+
+
+
+<img width="800" height="364" alt="AddProduct" src="https://github.com/user-attachments/assets/7f5e08cc-3e27-4830-ad1e-2e74abd0b694" />
+
+
+
+
+<img width="800" height="364" alt="ProductDetails" src="https://github.com/user-attachments/assets/fb3a621f-3726-4e94-b142-0e09ce25508e" />
+
+
+
+
+<img width="800" height="363" alt="UpdateProduct" src="https://github.com/user-attachments/assets/9086d39f-72b4-47bd-956c-2e39e576dcd7" />
+
+
+
+
+<img width="800" height="365" alt="DeleteProduct" src="https://github.com/user-attachments/assets/d3145f7e-0dff-4985-a535-679150b9387e" />
+
+
+
+
+<img width="800" height="361" alt="DeleteSupplierWithProducts" src="https://github.com/user-attachments/assets/ed68983c-8cff-46d0-876d-daa7b297b844" />
 
 
 ---
