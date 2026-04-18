@@ -38,7 +38,9 @@ else
         if (editModel != null)
         {
             var success = await SupplierService.UpdateAsync(id, editModel);
-            if (success) Navigation.NavigateTo("/suppliers");
+            
+            if (success) 
+                Navigation.NavigateTo("/suppliers?updated=true");
         }
     }
 }

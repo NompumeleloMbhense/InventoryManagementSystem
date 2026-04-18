@@ -1,6 +1,6 @@
 @page "/products/edit/{id:int}"
 @using SharedApp.Dto
-@using  ClientApp.Services
+@using ClientApp.Services
 @inject ProductService ProductService
 @inject NavigationManager Navigation
 
@@ -15,7 +15,8 @@ else
     <ProductForm FormModel="editModel" SubmitButtonText="Update Changes" OnValidSubmitForm="HandleUpdate" />
 }
 
-@code {
+@code
+{
     [Parameter] public int id { get; set; }
     private ProductUpdateDto? editModel;
 
@@ -40,7 +41,9 @@ else
         if (editModel != null)
         {
             var success = await ProductService.UpdateAsync(id, editModel);
-            if (success) Navigation.NavigateTo("/products");
+            
+            if (success)
+                Navigation.NavigateTo("/products?updated=true");
         }
     }
 }

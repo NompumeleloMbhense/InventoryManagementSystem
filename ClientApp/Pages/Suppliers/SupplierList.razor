@@ -44,7 +44,10 @@ else
                     <th>Name</th>
                     <th>Location</th>
                     <th>Email</th>
-                    @if (isAdmin) { <th class="text-center">Actions</th> }
+                    @if (isAdmin)
+                    {
+                        <th class="text-center">Actions</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -60,14 +63,13 @@ else
                         {
                             <td class="text-center">
                                 @* --- ORANGE EDIT BUTTON --- *@
-                                <button class="btn btn-sm fw-bold me-2" 
+                                <button class="btn btn-sm fw-bold me-2"
                                         style="background-color: #ff8c00; color: white; border: none;"
                                         @onclick="() => Edit(s.SupplierId)">
                                     Edit
                                 </button>
                                 @* --- RED DELETE BUTTON --- *@
-                                <button class="btn btn-sm btn-danger fw-bold" 
-                                        @onclick="() => DeleteSupplier(s.SupplierId, s.Name)">
+                                <button class="btn btn-sm btn-danger fw-bold" @onclick="() => DeleteSupplier(s.SupplierId, s.Name)">
                                     Delete
                                 </button>
                             </td>
@@ -81,11 +83,13 @@ else
     <div class="d-flex justify-content-between align-items-center mt-3">
         <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(pageNumber <= 1)">Previous</button>
         <span class="small text-muted">Page @pageNumber of @suppliers.TotalPages</span>
-        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(pageNumber >= suppliers.TotalPages)">Next</button>
+        <button class="btn btn-outline-primary btn-sm" @onclick="NextPage"
+                disabled="@(pageNumber >= suppliers.TotalPages)">Next</button>
     </div>
 }
 
-@code {
+@code
+{
     private PagedResponse<SupplierReadDto>? suppliers;
     private bool isAdmin = false;
     private int pageNumber = 1;
@@ -96,9 +100,31 @@ else
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         isAdmin = authState.User.IsInRole("Admin");
         await LoadSuppliersAsync();
+
+        // check for success messages in URL
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.ContainsKey("added"))
+        {
+            await ShowAlert("Success!", "Supplier has been added.", "success");
+        }
+        else if (query.ContainsKey("updated"))
+        {
+            await ShowAlert("Updated!", "Supplier changes have been saved.", "success");
+        }
     }
 
-    private async Task LoadSuppliersAsync() => 
+    private async Task ShowAlert(string title, string message, string icon)
+    {
+        // Trigger the SweetAlert
+        await JSRuntime.InvokeVoidAsync("Swal.fire", title, message, icon);
+        
+        // Clean the URL (remove the ?added=true) so it doesn't pop up again on refresh
+        Navigation.NavigateTo("/suppliers", replace: true);
+    }
+
+    private async Task LoadSuppliersAsync() =>
         suppliers = await SupplierService.GetPaginatedAsync(pageNumber, 5, searchTerm);
 
     private async Task Search() { pageNumber = 1; await LoadSuppliersAsync(); }
@@ -110,11 +136,31 @@ else
 
     private async Task DeleteSupplier(int id, string name)
     {
-        if (await JSRuntime.InvokeAsync<bool>("confirmDelete", $"Delete {name}?"))
+        //Ask for confirmation using the script in index.html
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirmDelete", $"Are you sure you want to delete '{name}'?");
+        
+        if (confirmed)
         {
             var success = await SupplierService.DeleteAsync(id);
-            if (success) await LoadSuppliersAsync();
-            else await JSRuntime.InvokeVoidAsync("Swal.fire", "Error", "Cannot delete supplier with products.", "error");
+            
+            if (success)
+            {
+                await LoadSuppliersAsync();
+                
+                // Show Success Alert immediately after deletion
+                await JSRuntime.InvokeVoidAsync("Swal.fire",
+                    "Deleted!",
+                    "The supplier has been removed.",
+                    "success");
+            }
+            else
+            {
+                // Handle case where supplier might have products 
+                await JSRuntime.InvokeVoidAsync("Swal.fire",
+                    "Error",
+                    "Cannot delete supplier with active products.",
+                    "error");
+            }
         }
     }
 }

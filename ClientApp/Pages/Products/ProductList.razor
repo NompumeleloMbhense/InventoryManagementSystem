@@ -54,7 +54,10 @@ else
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Category</th>
-                    @if (isAdmin) { <th class="text-center">Actions</th> }
+                    @if (isAdmin)
+                    {
+                        <th class="text-center">Actions</th>
+                    }
                 </tr>
             </thead>
             <tbody>
@@ -75,14 +78,13 @@ else
                         {
                             <td class="text-center">
                                 @* --- ORANGE EDIT BUTTON --- *@
-                                <button class="btn btn-sm fw-bold me-2" 
+                                <button class="btn btn-sm fw-bold me-2"
                                         style="background-color: #ff8c00; color: white; border: none;"
                                         @onclick='() => Navigation.NavigateTo($"/products/edit/{p.ProductId}")'>
                                     Edit
                                 </button>
                                 @* --- RED DELETE BUTTON --- *@
-                                <button class="btn btn-sm btn-danger fw-bold" 
-                                        @onclick="() => DeleteProduct(p.ProductId, p.Name)">
+                                <button class="btn btn-sm btn-danger fw-bold" @onclick="() => DeleteProduct(p.ProductId, p.Name)">
                                     Delete
                                 </button>
                             </td>
@@ -98,12 +100,14 @@ else
         <div class="d-flex justify-content-between align-items-center mt-3">
             <button class="btn btn-outline-primary btn-sm" @onclick="PrevPage" disabled="@(pageNumber <= 1)">Previous</button>
             <span class="small text-muted">Page @pageNumber of @products.TotalPages</span>
-            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage" disabled="@(pageNumber >= products.TotalPages)">Next</button>
+            <button class="btn btn-outline-primary btn-sm" @onclick="NextPage"
+                    disabled="@(pageNumber >= products.TotalPages)">Next</button>
         </div>
     }
 }
 
-@code {
+@code
+{
     private PagedResponse<ProductReadDto>? products;
     private bool isAdmin = false;
     private int pageNumber = 1;
@@ -114,7 +118,30 @@ else
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         isAdmin = authState.User.IsInRole("Admin");
+
         await LoadProductsAsync();
+
+        // Check for flags in the URL to show success messages
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.ContainsKey("added"))
+        {
+            await ShowAlert("Success!", "Product added successfully.", "success");
+        }
+        else if (query.ContainsKey("updated"))
+        {
+            await ShowAlert("Updated!", "Product details have been saved.", "success");
+        }
+
+    }
+
+    private async Task ShowAlert(string title, string message, string icon)
+    {
+        await JSRuntime.InvokeVoidAsync("Swal.fire", title, message, icon);
+        
+        // Clean the URL (removes the ?added=true so it doesn't show again on refresh)
+        Navigation.NavigateTo("/products", replace: true);
     }
 
     private async Task LoadProductsAsync() => products = await ProductService.GetPaginatedAsync(pageNumber, 8);
@@ -136,10 +163,19 @@ else
 
     private async Task DeleteProduct(int id, string name)
     {
-        if (await JSRuntime.InvokeAsync<bool>("confirmDelete", $"Remove {name}?"))
+        // Show confirmation dialog before deletion
+        var confirmed = await JSRuntime.InvokeAsync<bool>("confirmDelete", $"Remove '{name}' from inventory?");
+
+        if (confirmed)
         {
-            await ProductService.DeleteAsync(id);
-            await LoadProductsAsync();
+            var success = await ProductService.DeleteAsync(id);
+            if (success)
+            {
+                await LoadProductsAsync();
+                
+                //Show Success Alert immediately
+                await JSRuntime.InvokeVoidAsync("Swal.fire", "Deleted!", "The product was removed.", "success");
+            }
         }
     }
 }

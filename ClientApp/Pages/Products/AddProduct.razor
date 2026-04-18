@@ -7,12 +7,15 @@
 <h3 class="mb-4">Add Product</h3>
 <ProductForm FormModel="product" SubmitButtonText="Create Product" OnValidSubmitForm="HandleAdd" />
 
-@code {
+@code
+{
     private ProductCreateDto product = new();
 
     private async Task HandleAdd()
     {
         var success = await ProductService.CreateAsync(product);
-        if (success) Navigation.NavigateTo("/products?added=true");
+        
+        if (success)
+            Navigation.NavigateTo("/products?added=true");
     }
 }
