@@ -174,25 +174,36 @@ The app seeds initial users:
 <img width="800" height="360" alt="AdminLogin" src="https://github.com/user-attachments/assets/43a94b17-a137-421c-abe8-23213e64b53f" />
 
 
+
+
 <img width="800" height="364" alt="Dashboard" src="https://github.com/user-attachments/assets/13591dad-6ba9-4a69-a3ac-34784ceaafe2" />
+
+
 
 
 <img width="800" height="362" alt="SearchProduct" src="https://github.com/user-attachments/assets/144a7174-535e-4616-994d-43f32122f0f5" />
 
 
+
+
 <img width="800" height="364" alt="AddProduct" src="https://github.com/user-attachments/assets/7f5e08cc-3e27-4830-ad1e-2e74abd0b694" />
+
+
 
 
 <img width="800" height="364" alt="ProductDetails" src="https://github.com/user-attachments/assets/fb3a621f-3726-4e94-b142-0e09ce25508e" />
 
 
+
+
 <img width="800" height="363" alt="UpdateProduct" src="https://github.com/user-attachments/assets/9086d39f-72b4-47bd-956c-2e39e576dcd7" />
+
+
 
 
 <img width="800" height="365" alt="DeleteProduct" src="https://github.com/user-attachments/assets/d3145f7e-0dff-4985-a535-679150b9387e" />
 
 
-<img width="1916" height="864" alt="SuppliersList" src="https://github.com/user-attachments/assets/41ddae83-2d89-4652-bf99-067a599b12b6" />
 
 
 <img width="800" height="361" alt="DeleteSupplierWithProducts" src="https://github.com/user-attachments/assets/ed68983c-8cff-46d0-876d-daa7b297b844" />
