@@ -86,15 +86,15 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Password policy configuration for identity
-// builder.Services.Configure<IdentityOptions>(options =>
-// {
-//     options.Password.RequireDigit = true;
-//     options.Password.RequireLowercase = true;
-//     options.Password.RequireUppercase = true;
-//     options.Password.RequireNonAlphanumeric = true;
-//     options.Password.RequiredLength = 8;
-// });
+//Password policy configuration for identity
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireUppercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequiredLength = 8;
+});
 
 var app = builder.Build();
 

@@ -38,7 +38,17 @@ namespace ServerApp.Controllers
         {
             var (suppliers, totalCount) = await _service.GetPaginatedAsync(pageNumber, pageSize, searchTerm);
 
-            return Ok(new { Data = suppliers, TotalCount = totalCount, PageNumber = pageNumber, PageSize = pageSize });
+            // FIXED: Use the actual DTO class instead of 'new { ... }'
+            var response = new PagedResponse<SupplierReadDto>
+            {
+                Data = suppliers,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            };
+
+            return Ok(response);
         }
 
 
