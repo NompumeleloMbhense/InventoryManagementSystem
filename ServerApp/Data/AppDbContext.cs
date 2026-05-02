@@ -19,6 +19,7 @@ namespace ServerApp.Data
 
         public DbSet<Product> Products => Set<Product>();
         public DbSet<Supplier> Suppliers => Set<Supplier>();
+        public DbSet<StockTransaction> StockTransactions => Set<StockTransaction>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,6 +36,13 @@ namespace ServerApp.Data
             modelBuilder.Entity<Product>()
                         .Property(p => p.Price)
                         .HasPrecision(18, 2);
+
+            
+            modelBuilder.Entity<StockTransaction>()
+                        .HasOne(t => t.Product)
+                        .WithMany() // A product has many transactions
+                        .HasForeignKey(t => t.ProductId)
+                        .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

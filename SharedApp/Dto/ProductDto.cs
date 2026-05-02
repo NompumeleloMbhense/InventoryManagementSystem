@@ -56,4 +56,13 @@ namespace SharedApp.Dto
         public string? Category { get; set; }
         public int? SupplierId { get; set; }
     }
+
+    public record StockTransactionReadDto
+    {
+        public int Id { get; set; }
+        public int QuantityChange { get; set; }
+        public string ActionType { get; set; } = string.Empty;
+        public string PerformedBy { get; set; } = string.Empty;
+        public DateTime DateOccurred { get; set; }
+    }
 }
