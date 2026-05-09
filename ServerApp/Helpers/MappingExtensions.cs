@@ -53,5 +53,15 @@ namespace ServerApp.Helpers
                 Available = p.Available
             }).ToList()
         };
+
+        // 4. Stock Transaction Mappings
+        public static StockTransactionReadDto ToReadDto(this StockTransaction t) => new()
+        {
+            Id = t.Id,
+            QuantityChange = t.QuantityChange,
+            ActionType = t.ActionType,
+            PerformedBy = t.PerformedBy,
+            DateOccurred = t.DateOccurred  
+        };
     }
 }

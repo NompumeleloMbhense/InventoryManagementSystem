@@ -13,10 +13,12 @@ namespace ServerApp.Services
     public class ProductService : IProductService
     {
         private readonly IProductRepository _repo;
+        private readonly IStockTransactionService _transactionService;
 
-        public ProductService(IProductRepository repo)
+        public ProductService(IProductRepository repo, IStockTransactionService transactionService)
         {
             _repo = repo;
+            _transactionService = transactionService;
         }
 
         // --- Helper Method (Internal use only) ---
@@ -50,11 +52,11 @@ namespace ServerApp.Services
 
             return product.ToReadDto();
         }
-        
+
         // Creates a new product from the provide DTO and 
-        // reurns the created product as a DTO,
+        // returns the created product as a DTO,
         // throws InvalidOperationException if the specified supplier does not exist
-        public async Task<ProductReadDto> CreateAsync(ProductCreateDto dto)
+        public async Task<ProductReadDto> CreateAsync(ProductCreateDto dto, string performedBy)
         {
             if (!await _repo.SupplierExistsAsync(dto.SupplierId))
                 throw new InvalidOperationException("Supplier does not exist");
@@ -70,6 +72,10 @@ namespace ServerApp.Services
 
             await _repo.AddAsync(product);
 
+            // Recording initial stock transaction for the new product
+            await _transactionService.RecordAsync(product.ProductId, product.Stock,
+            "Initial Stock", performedBy);
+
             var created = await GetProductEntityAsync(product.ProductId);
             return created.ToReadDto();
         }
@@ -78,10 +84,12 @@ namespace ServerApp.Services
         // Updates an existing product with provided DTO data and 
         // reurns the updated product as a DTO,
         // throws KeyNotFoundException if the product does not exist
-        public async Task<ProductReadDto> UpdateAsync(int id, ProductUpdateDto dto)
+        public async Task<ProductReadDto> UpdateAsync(int id, ProductUpdateDto dto, string performedBy)
         {
-            
+
             var product = await GetProductEntityAsync(id);
+
+            int oldStock = product.Stock;
 
             if (!await _repo.SupplierExistsAsync(dto.SupplierId))
                 throw new InvalidOperationException("Invalid SupplierId.");
@@ -94,15 +102,25 @@ namespace ServerApp.Services
             product.SupplierId = dto.SupplierId;
 
             await _repo.UpdateAsync(product);
+
+            int difference = product.Stock - oldStock;
+            if (difference != 0)
+            {
+                await _transactionService.RecordAsync(id, difference, "Manual Update", performedBy);
+            }
+
             return product.ToReadDto();
         }
 
 
         // Partially updates an existing product with provided DTO data and 
         // reruns the updated product as a DTO
-        public async Task<ProductReadDto> PatchAsync(int id, ProductPatchDto dto)
+        public async Task<ProductReadDto> PatchAsync(int id, ProductPatchDto dto, string performedBy)
         {
             var product = await GetProductEntityAsync(id);
+
+            // 1. Capture OLD stock
+            int oldStock = product.Stock;
 
             if (dto.SupplierId.HasValue)
             {
@@ -124,7 +142,22 @@ namespace ServerApp.Services
                 product.Category = dto.Category;
 
             await _repo.UpdateAsync(product);
+
+            // 2. Calculate difference
+            int difference = product.Stock - oldStock;
+            if (difference != 0)
+            {
+                await _transactionService.RecordAsync(id, difference, "Partial Update", performedBy);
+            }
+
             return product.ToReadDto();
+        }
+
+        // Gets the stock transaction history for a specific product,
+        // returns the transactions as DTOs
+        public async Task<IEnumerable<StockTransactionReadDto>> GetProductHistoryAsync(int productId)
+        {
+            return await _transactionService.GetHistoryByProductAsync(productId);
         }
 
         // Deletes a product by ID, throws 
@@ -154,9 +187,12 @@ namespace ServerApp.Services
         public async Task<int> GetTotalCountAsync()
            => await _repo.GetTotalCountAsync();
 
+
         // Gets the count of products that are low in stock
         public async Task<int> GetLowStockCountAsync()
             => await _repo.GetLowStockCountAsync();
 
+
+        
     }
 }

@@ -40,6 +40,10 @@ namespace ServerApp.Controllers
             _logger = logger;
         }
 
+        // --- Helper to get the current user's name from JWT ---
+        private string GetCurrentUserName() => 
+            User.FindFirst("fullName")?.Value ?? User.Identity?.Name ?? "System User";
+
         // READ endpoints - Publicly accessible
         // GET: api/products
         [AllowAnonymous]
@@ -72,7 +76,10 @@ namespace ServerApp.Controllers
         public async Task<IActionResult> GetById(int id)
            => Ok(await _service.GetByIdAsync(id));
 
-
+        [Authorize]
+        [HttpGet("{id:int}/history")]
+        public async Task<IActionResult> GetHistory(int id)
+            =>  Ok(await _service.GetProductHistoryAsync(id));
 
         // WRITE endpoints - Require login (JWT)
         // ADMIN ONLY: Create Product
@@ -90,7 +97,7 @@ namespace ServerApp.Controllers
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var result = await _service.CreateAsync(dto);
+            var result = await _service.CreateAsync(dto, GetCurrentUserName());
 
             return CreatedAtAction(
                nameof(GetById),
@@ -109,7 +116,7 @@ namespace ServerApp.Controllers
             if (!validationResult.IsValid) 
                 throw new ValidationException(validationResult.Errors);
 
-            var result = await _service.UpdateAsync(id, dto);
+            var result = await _service.UpdateAsync(id, dto, GetCurrentUserName());
             return Ok(result);
         }
 
@@ -123,7 +130,7 @@ namespace ServerApp.Controllers
             if (!validationResult.IsValid) 
                 throw new ValidationException(validationResult.Errors);
 
-            var result = await _service.PatchAsync(id, dto);
+            var result = await _service.PatchAsync(id, dto, GetCurrentUserName());
             return Ok(result);
         }
 

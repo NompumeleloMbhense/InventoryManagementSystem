@@ -10,15 +10,17 @@ namespace InventorySystem.Tests
     public class ProductServiceTests
     {
         private readonly Mock<IProductRepository> _mockRepo;
+        private readonly Mock<IStockTransactionService> _mockTransactionService;
         private readonly ProductService _service;
 
         public ProductServiceTests()
         {
             // 1. Arrange: Create a "Fake" version of the Repository
             _mockRepo = new Mock<IProductRepository>();
+            _mockTransactionService = new Mock<IStockTransactionService>();
 
             // 2. Arrange: Inject that fake repo into the actual ProductService
-            _service = new ProductService(_mockRepo.Object);
+            _service = new ProductService(_mockRepo.Object, _mockTransactionService.Object);
         }
 
         [Fact]
@@ -72,7 +74,9 @@ namespace InventorySystem.Tests
                      .ReturnsAsync(false);
 
             // Act & Assert
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _service.CreateAsync(dto));
+           var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            _service.CreateAsync(dto, "TestUser")); 
+            
             Assert.Equal("Supplier does not exist", ex.Message);
         }
     }

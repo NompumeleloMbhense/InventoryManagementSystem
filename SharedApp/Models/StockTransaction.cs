@@ -15,8 +15,8 @@ namespace SharedApp.Models
         public int QuantityChange { get; set; } // Postive for additions, negative for removals
         public string ActionType { get; set; } = string.Empty;
 
-        public string PerfomedBy { get; set; } = string.Empty; // The username from the JWT
-        public DateTime DateOccured { get; set; } = DateTime.UtcNow;
+        public string PerformedBy { get; set; } = string.Empty; // The username from the JWT
+        public DateTime DateOccurred { get; set; } = DateTime.UtcNow;
 
     }
 }

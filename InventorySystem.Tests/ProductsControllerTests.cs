@@ -7,6 +7,9 @@ using FluentValidation.Results;
 using ServerApp.Controllers;
 using ServerApp.Services;
 using SharedApp.Dto;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+
 
 namespace InventorySystem.Tests
 {
@@ -25,17 +28,29 @@ namespace InventorySystem.Tests
             _mockUpdateValidator = new Mock<IValidator<ProductUpdateDto>>();
             _mockLogger = new Mock<ILogger<ProductsController>>();
 
-            // Fake validators to satisfy the constructor
-            var mockUpdate = new Mock<IValidator<ProductUpdateDto>>();
             var mockPatch = new Mock<IValidator<ProductPatchDto>>();
 
             _controller = new ProductsController(
-           _mockService.Object,
-           _mockCreateValidator.Object,
-           _mockUpdateValidator.Object, // Use our mock here
-           mockPatch.Object,
-           _mockLogger.Object
+                _mockService.Object,
+                _mockCreateValidator.Object,
+                _mockUpdateValidator.Object,
+                mockPatch.Object,
+                _mockLogger.Object
             );
+
+            // --- NEW: MOCK THE USER CONTEXT ---
+            // This creates a fake user so User.FindFirst() doesn't return null
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
+            {
+                new Claim("fullName", "Test Admin"),
+                new Claim(ClaimTypes.Name, "admin@test.com"),
+                new Claim(ClaimTypes.Role, "Admin")
+            }, "mock"));
+
+            _controller.ControllerContext = new ControllerContext()
+            {
+                HttpContext = new DefaultHttpContext() { User = user }
+            };
         }
 
 
@@ -79,7 +94,7 @@ namespace InventorySystem.Tests
                 .Setup(v => v.ValidateAsync(dto, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new ValidationResult());
 
-            _mockService.Setup(s => s.CreateAsync(dto)).ReturnsAsync(resultDto);
+            _mockService.Setup(s => s.CreateAsync(dto, It.IsAny<string>())).ReturnsAsync(resultDto);
 
             // Act
             var result = await _controller.Create(dto);
@@ -108,7 +123,7 @@ namespace InventorySystem.Tests
             await Assert.ThrowsAsync<ValidationException>(() => _controller.Create(dto));
 
             // Verify the service was never called
-            _mockService.Verify(s => s.CreateAsync(It.IsAny<ProductCreateDto>()), Times.Never);
+            _mockService.Verify(s => s.CreateAsync(It.IsAny<ProductCreateDto>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -125,7 +140,7 @@ namespace InventorySystem.Tests
                 .ReturnsAsync(new ValidationResult());
 
             // Mock Service: Return the updated product
-            _mockService.Setup(s => s.UpdateAsync(productId, dto))
+            _mockService.Setup(s => s.UpdateAsync(productId, dto, It.IsAny<string>()))
                         .ReturnsAsync(updatedDto);
 
             // 2. Act
@@ -155,7 +170,7 @@ namespace InventorySystem.Tests
             await Assert.ThrowsAsync<ValidationException>(() => _controller.Update(productId, dto));
 
             // Verify service was never called
-            _mockService.Verify(s => s.UpdateAsync(It.IsAny<int>(), It.IsAny<ProductUpdateDto>()), Times.Never);
+            _mockService.Verify(s => s.UpdateAsync(It.IsAny<int>(), It.IsAny<ProductUpdateDto>(), It.IsAny<string>()), Times.Never);
         }
 
         [Fact]

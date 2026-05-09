@@ -4,9 +4,6 @@ using Serilog;
 using System.Text;
 using ServerApp.Data;
 using ServerApp.Repositories;
-using SharedApp.Validators;
-using SharedApp.Dto;
-using SharedApp.Models;
 using ServerApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -65,11 +62,13 @@ builder.Services.AddAuthorization();
 
 
 // --- 4. Dependency Injection (Repositories and Services) ---
-builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+builder.Services.AddScoped<IStockTransactionRepository, StockTransactionRepository>();
 
-builder.Services.AddScoped<ISupplierService, SupplierService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<IStockTransactionService, StockTransactionService>();
 
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
