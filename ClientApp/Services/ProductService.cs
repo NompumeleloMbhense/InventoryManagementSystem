@@ -39,6 +39,13 @@ namespace ClientApp.Services
             return response.IsSuccessStatusCode;
         }
 
+        public async Task<IEnumerable<StockTransactionReadDto>> GetHistoryAsync(int productId)
+        {
+            var response = await _http.GetFromJsonAsync<IEnumerable<StockTransactionReadDto>>
+                                                    ($"api/products/{productId}/history");
+             return response ?? Enumerable.Empty<StockTransactionReadDto>();
+        }
+
         public async Task<bool> UpdateAsync(int id, ProductUpdateDto dto)
         {
             var response = await _http.PutAsJsonAsync($"api/products/{id}", dto);
