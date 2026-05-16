@@ -14,7 +14,7 @@ builder.Services.AddScoped<JwtAuthorizationMessageHandler>();
 
 // 2. Configure HttpClient with Automatic JWT handling
 builder.Services.AddHttpClient("ServerAPI", client => 
-    client.BaseAddress = new Uri("http://localhost:5075/")) // Ensure this matches your Server port
+    client.BaseAddress = new Uri(builder.HostEnvironment.BaseAddress))
     .AddHttpMessageHandler<JwtAuthorizationMessageHandler>();
 
 // Supply the default HttpClient from the factory

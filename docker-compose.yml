@@ -1,0 +1,23 @@
+services:
+  db-server:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "1433:1433"
+
+  inventory-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:8080"
+    environment:
+      # We build the connection string using the password from .env
+      - ConnectionStrings__InventoryDBConnection=Server=db-server;Database=InventoryDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
+      - JwtSettings__Key=${JWT_KEY}
+      - JwtSettings__Issuer=InventoryAPI
+      - JwtSettings__Audience=InventoryClient
+    depends_on:
+      - db-server

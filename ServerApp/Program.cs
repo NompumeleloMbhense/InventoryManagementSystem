@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using ServerApp.Services;
 using ServerApp.Middleware;
+using Microsoft.AspNetCore.Builder;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,6 +102,9 @@ var app = builder.Build();
 // 5. GLOBAL EXCEPTION HANDLER
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
+
 // 6. MIDDLEWARE PIPELINE
 app.UseRouting();
 app.UseCors();
@@ -108,6 +112,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 // 7. DATA SEEDING
 SeedData.EnsurePopulated(app);
