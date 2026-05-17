@@ -6,18 +6,26 @@ services:
       - MSSQL_SA_PASSWORD=${DB_PASSWORD}
     ports:
       - "1433:1433"
+    volumes:
+      - sql-data:/var/opt/mssql 
 
   inventory-app:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:8080"
+      - "5050:8080"
     environment:
       # We build the connection string using the password from .env
       - ConnectionStrings__InventoryDBConnection=Server=db-server;Database=InventoryDB;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;
       - JwtSettings__Key=${JWT_KEY}
       - JwtSettings__Issuer=InventoryAPI
       - JwtSettings__Audience=InventoryClient
+      - SeedUser__AdminEmail=${ADMIN_EMAIL}
+      - SeedUser__AdminPassword=${ADMIN_PASSWORD}
     depends_on:
       - db-server
+
+# This section tells Docker to create a permanent storage area on your computer
+volumes:
+  sql-data:
