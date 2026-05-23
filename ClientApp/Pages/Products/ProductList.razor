@@ -12,7 +12,20 @@
     @if (isAdmin)
     {
         <button class="btn btn-success" @onclick='() => Navigation.NavigateTo("/products/add")'>
-            + Add Product
+            Add Product
+        </button>
+
+        <button class="btn btn-outline-dark" @onclick="ExportToCsv" disabled="@isExporting">
+            @if (isExporting)
+            {
+                <span class="spinner-border spinner-border-sm me-1"></span>
+                <span>Generating...</span>
+            }
+            else
+            {
+                <i class="bi bi-file-earmark-spreadsheet me-1"></i>
+                <span>Export All CSV</span>
+            }
         </button>
     }
 </div>
@@ -80,7 +93,7 @@ else
                                 @* --- ORANGE EDIT BUTTON --- *@
                                 <button class="btn btn-sm fw-bold me-2"
                                         style="background-color: #ff8c00; color: white; border: none;"
-                                        @onclick='() => Navigation.NavigateTo($"/products/edit/{p.ProductId}")'>
+                                        @onclick='() => Navigation.NavigateTo($"/products/edit/{p.ProductId}?returnPage={pageNumber}")'>
                                     Edit
                                 </button>
                                 @* --- RED DELETE BUTTON --- *@
@@ -114,6 +127,8 @@ else
     private string searchQuery = "";
     private string selectedCategory = "";
 
+    private bool isExporting = false;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -125,27 +140,38 @@ else
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
-        if (query.ContainsKey("added"))
+        if (query.TryGetValue("page", out var p) && int.TryParse(p, out var parsedPage))
         {
-            await ShowAlert("Success!", "Product added successfully.", "success");
-        }
-        else if (query.ContainsKey("updated"))
-        {
-            await ShowAlert("Updated!", "Product details have been saved.", "success");
+            pageNumber = parsedPage;
         }
 
+        await LoadProductsAsync();
+
+        // Check for flags (added/updated)
+        if (query.ContainsKey("added"))
+            await ShowAlert("Success!", "Product added.", "success");
+
+        if (query.ContainsKey("updated"))
+            await ShowAlert("Updated!", "Product saved.", "success");
     }
 
     private async Task ShowAlert(string title, string message, string icon)
     {
         await JSRuntime.InvokeVoidAsync("Swal.fire", title, message, icon);
-        
+
         // Clean the URL (removes the ?added=true so it doesn't show again on refresh)
         Navigation.NavigateTo("/products", replace: true);
     }
 
-    private async Task LoadProductsAsync() => products = await ProductService.GetPaginatedAsync(pageNumber, 8);
-
+    private async Task LoadProductsAsync()
+    {
+        products = await ProductService.GetPaginatedAsync(pageNumber, 8);
+        
+        // 2. KEEP THE URL UPDATED when we change pages
+        // This ensures when we hit "Next", the URL becomes ?page=2
+        var newUri = Navigation.GetUriWithQueryParameter("page", pageNumber);
+        Navigation.NavigateTo(newUri, forceLoad: false);
+    }
     private async Task PerformSearch()
     {
         var results = await ProductService.SearchAsync(searchQuery, selectedCategory);
@@ -172,10 +198,49 @@ else
             if (success)
             {
                 await LoadProductsAsync();
-                
+
                 //Show Success Alert immediately
                 await JSRuntime.InvokeVoidAsync("Swal.fire", "Deleted!", "The product was removed.", "success");
             }
+        }
+    }
+
+    private async Task ExportToCsv()
+    {
+        try
+        {
+            isExporting = true;
+
+            // 1. Fetch the full list of products from the server
+            var allProducts = await ProductService.GetAllForExportAsync();
+
+            if (allProducts == null || !allProducts.Any())
+            {
+                await JSRuntime.InvokeVoidAsync("Swal.fire", "Info", "No data available to export.", "info");
+                return;
+            }
+
+            // 2. Build the CSV string
+            var csv = new System.Text.StringBuilder(); // Header row
+            csv.AppendLine("Product ID,Name,Category,Price,Stock,Supplier,Supplier Location");
+
+            foreach (var p in allProducts)
+            {
+                csv.AppendLine($"{p.ProductId},\"{p.Name}\",\"{p.Category}\",{p.Price},{p.Stock},\"{p.SupplierName}\",\"{p.SupplierLocation}\"");
+
+            }
+
+            // 3. Trigger the JS download helper to save the CSV file
+            var fileName = $"Full_Inventory_{DateTime.Now:ddMMyyyy_HHmm}.csv";
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, csv.ToString());
+        }
+        catch (Exception)
+        {
+            await JSRuntime.InvokeVoidAsync("Swal.fire", "Error", "Failed to export data.", "error");
+        }
+        finally
+        {
+            isExporting = false;
         }
     }
 }

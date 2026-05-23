@@ -65,7 +65,7 @@ else
                                 @* --- ORANGE EDIT BUTTON --- *@
                                 <button class="btn btn-sm fw-bold me-2"
                                         style="background-color: #ff8c00; color: white; border: none;"
-                                        @onclick="() => Edit(s.SupplierId)">
+                                        @onclick='() => Navigation.NavigateTo($"/suppliers/edit/{s.SupplierId}?returnPage={pageNumber}")'>
                                     Edit
                                 </button>
                                 @* --- RED DELETE BUTTON --- *@
@@ -99,33 +99,43 @@ else
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         isAdmin = authState.User.IsInRole("Admin");
-        await LoadSuppliersAsync();
 
-        // check for success messages in URL
+        // 1. GET THE PAGE NUMBER FROM THE URL
         var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
         var query = Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query);
 
+        if (query.TryGetValue("page", out var p) && int.TryParse(p, out var parsedPage))
+        {
+            pageNumber = parsedPage;
+        }
+
+        await LoadSuppliersAsync();
+
+        // Check for flags (added/updated)
         if (query.ContainsKey("added"))
-        {
-            await ShowAlert("Success!", "Supplier has been added.", "success");
-        }
-        else if (query.ContainsKey("updated"))
-        {
-            await ShowAlert("Updated!", "Supplier changes have been saved.", "success");
-        }
+            await ShowAlert("Success!", "Supplier added.", "success");
+
+        if (query.ContainsKey("updated"))
+            await ShowAlert("Updated!", "Supplier saved.", "success");
     }
 
     private async Task ShowAlert(string title, string message, string icon)
     {
         // Trigger the SweetAlert
         await JSRuntime.InvokeVoidAsync("Swal.fire", title, message, icon);
-        
+
         // Clean the URL (remove the ?added=true) so it doesn't pop up again on refresh
         Navigation.NavigateTo("/suppliers", replace: true);
     }
 
-    private async Task LoadSuppliersAsync() =>
+    private async Task LoadSuppliersAsync()
+    {
         suppliers = await SupplierService.GetPaginatedAsync(pageNumber, 5, searchTerm);
+
+        // 2. KEEP THE BROWSER URL SYNCED (e.g. update address bar to ?page=2)
+        var newUri = Navigation.GetUriWithQueryParameter("page", pageNumber);
+        Navigation.NavigateTo(newUri, forceLoad: false);
+    }
 
     private async Task Search() { pageNumber = 1; await LoadSuppliersAsync(); }
     private async Task ClearSearch() { searchTerm = ""; pageNumber = 1; await LoadSuppliersAsync(); }
@@ -138,15 +148,15 @@ else
     {
         //Ask for confirmation using the script in index.html
         var confirmed = await JSRuntime.InvokeAsync<bool>("confirmDelete", $"Are you sure you want to delete '{name}'?");
-        
+
         if (confirmed)
         {
             var success = await SupplierService.DeleteAsync(id);
-            
+
             if (success)
             {
                 await LoadSuppliersAsync();
-                
+
                 // Show Success Alert immediately after deletion
                 await JSRuntime.InvokeVoidAsync("Swal.fire",
                     "Deleted!",
@@ -155,7 +165,7 @@ else
             }
             else
             {
-                // Handle case where supplier might have products 
+                // Handle case where supplier might have products
                 await JSRuntime.InvokeVoidAsync("Swal.fire",
                     "Error",
                     "Cannot delete supplier with active products.",

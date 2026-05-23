@@ -24,11 +24,20 @@ namespace ServerApp.Repositories
         {
 
             return await _db.Products
-                .AsNoTracking() // Performance boost
+                .AsNoTracking() 
                 .Include(p => p.Supplier)
-                .OrderBy(p => p.ProductId)
+                .OrderByDescending(p => p.ProductId)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Product>> GetAllAsync()
+        {
+            return await _db.Products
+                .AsNoTracking()
+                .Include(p => p.Supplier)
+                .OrderBy(p => p.Name)
                 .ToListAsync();
         }
 

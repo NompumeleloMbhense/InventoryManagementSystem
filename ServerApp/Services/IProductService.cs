@@ -12,6 +12,7 @@ namespace ServerApp.Services
     {
         Task<(IEnumerable<ProductReadDto> Products, int TotalCount)> GetPaginatedAsync(int pageNumber,
          int pageSize);
+        Task<IEnumerable<ProductReadDto>> GetAllForExportAsync();
         Task<ProductReadDto> GetByIdAsync(int id);
         Task<ProductReadDto> CreateAsync(ProductCreateDto dto, string performedBy);
         Task<ProductReadDto> UpdateAsync(int id, ProductUpdateDto dto, string performedBy);

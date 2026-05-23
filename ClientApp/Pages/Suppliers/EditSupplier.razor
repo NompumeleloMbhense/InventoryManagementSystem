@@ -15,9 +15,26 @@ else
     <SupplierForm FormModel="@editModel" SubmitButtonText="Update Changes" OnValidSubmitForm="HandleUpdate" />
 }
 
-@code {
+@code
+{
     [Parameter] public int id { get; set; }
     private SupplierUpdateDto? editModel;
+
+    // Default to page 1
+    private int returnPage = 1;
+
+    // This runs first to capture the returnPage query parameter
+    // before the async data load happens in OnInitializedAsync
+    protected override void OnInitialized()
+    {
+        // Capture the returnPage from the URL
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnPage", out var p))
+        {
+            int.TryParse(p, out returnPage);
+        }
+    }
+
 
     protected override async Task OnInitializedAsync()
     {
@@ -38,9 +55,12 @@ else
         if (editModel != null)
         {
             var success = await SupplierService.UpdateAsync(id, editModel);
-            
-            if (success) 
-                Navigation.NavigateTo("/suppliers?updated=true");
+
+            if (success)
+            {
+                // REDIRECT back to the specific page and show the alert
+                Navigation.NavigateTo($"/suppliers?page={returnPage}&updated=true");
+            }
         }
     }
 }

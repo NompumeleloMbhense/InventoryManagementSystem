@@ -75,5 +75,10 @@ namespace ClientApp.Services
         public async Task<int> GetLowStockCountAsync()
             => await _http.GetFromJsonAsync<int>("api/products/lowstockcount");
 
+        public async Task<IEnumerable<ProductReadDto>> GetAllForExportAsync()
+        {
+            var response = await _http.GetFromJsonAsync<IEnumerable<ProductReadDto>>("api/products/export");
+            return response ?? Enumerable.Empty<ProductReadDto>();   
+        }
     }
 }

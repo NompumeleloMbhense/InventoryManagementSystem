@@ -20,6 +20,18 @@ else
     [Parameter] public int id { get; set; }
     private ProductUpdateDto? editModel;
 
+    private int returnPage = 1;
+
+    protected override void OnInitialized()
+    {
+        // Capture the returnPage from the URL
+        var uri = Navigation.ToAbsoluteUri(Navigation.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("returnPage", out var p))
+        {
+            int.TryParse(p, out returnPage);
+        }
+    }
+
     protected override async Task OnInitializedAsync()
     {
         var product = await ProductService.GetByIdAsync(id);
@@ -41,9 +53,12 @@ else
         if (editModel != null)
         {
             var success = await ProductService.UpdateAsync(id, editModel);
-            
+
             if (success)
-                Navigation.NavigateTo("/products?updated=true");
+            {
+                // REDIRECT back to the specific page we came from
+                Navigation.NavigateTo($"/products?page={returnPage}&updated=true");
+            }
         }
     }
 }

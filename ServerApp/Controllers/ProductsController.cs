@@ -184,5 +184,13 @@ namespace ServerApp.Controllers
             var count = await _service.GetLowStockCountAsync();
             return Ok(count);
         }
+
+        [Authorize]
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportAll()
+        {
+            var products = await _service.GetAllForExportAsync();
+            return Ok(products);
+        }
     }
 }

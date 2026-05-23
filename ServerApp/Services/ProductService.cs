@@ -42,6 +42,14 @@ namespace ServerApp.Services
             return (dtos, total);
         }
 
+        // Gets all products for export purposes, returns them as DTOs
+        public async Task<IEnumerable<ProductReadDto>> GetAllForExportAsync()
+        {
+            var products = await _repo.GetAllAsync();
+            return products.Select(p => p.ToReadDto()); 
+        }
+
+
         // Gets a single product by ID, including its supplier details
         public async Task<ProductReadDto> GetByIdAsync(int id)
         {

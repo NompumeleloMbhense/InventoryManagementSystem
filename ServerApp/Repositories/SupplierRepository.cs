@@ -41,7 +41,7 @@ namespace ServerApp.Repositories
 
 
             return await query
-            .OrderBy(s => s.SupplierId)
+            .OrderByDescending(s => s.SupplierId)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
