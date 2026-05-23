@@ -1,171 +1,125 @@
 # Product & Supplier Manager
 
-A full-stack web application built with a Blazor WebAssembly frontend and an ASP.NET Core Web API backend. 
-This system provides comprehensive functionality for managing products and their suppliers,
-featuring JWT-based user authentication and role-based authorization.
+A professional-grade full-stack web application built with a Blazor WebAssembly frontend and an ASP.NET Core 8 Web API backend. 
+This system provides comprehensive functionality for managing products and their suppliers, featuring an automated audit trail 
+for stock movements, JWT-based security, and a fully containerized environment.
 
 ---
 
 ## Key Features
 
--   **User Authentication**: Secure registration and login system using JWT (JSON Web Tokens).
--   **Role-Based Access Control**: Differentiates between `Admin` and `User` roles. Admins have full CRUD access, while regular users have read-only permissions.
--   **Product Management**: Admins can create, read, update, and delete products. The product list is paginated and includes search and filtering capabilities.
--   **Supplier Management**: Admins can manage supplier information. The system supports full CRUD operations, pagination, and search for suppliers.
--   **Dashboard**: A welcoming dashboard for authenticated users that provides a quick overview of total products and suppliers.
--   **Clean Architecture**: The solution is separated into three distinct projects (`ServerApp`, `ClientApp`, `SharedApp`) for maintainability and separation of concerns.
--   **Database Seeding**: The application automatically seeds the database with initial data (roles, users, products, suppliers) on startup for easy setup and testing.
--   **Automated Unit Testing**: High-coverage test suite ensuring the reliability of business logic and API reliability.
+-   **User Authentication**: Secure registration and login system using JWT (JSON Web Tokens) with local storage persistence.
+-   **Role-Based Access Control**: Strict differentiation between Admin and User roles. Admins have full CRUD access, while regular users are restricted to read-only views.
+-   **Product & Supplier Management**: Full lifecycle management including pagination, name-based search, and category filtering.
+-   **Stock Movement History (Audit Trail)**: Automatically tracks every change in inventory levels. Logs the quantity changed, the action type (Restock, Manual Update, etc.), the user who performed it, and a timestamp.
+-   **Export to CSV**: Admins can export the entire product inventory to a CSV file for external reporting in Excel.
+-   **Docker Ready**: Fully containerized using Docker Compose, including a persistent SQL Server database volume.
+-   **Automated Unit Testing**: Robust test suite using xUnit and Moq ensuring the reliability of core business services and API controllers.
 
 ---
 
 ## System Architecture
 
-The application is structured into three main projects to enforce a clean separation of concerns:
+# The application follows a Clean Architecture pattern across four distinct projects:
 
--   **`ServerApp`**: An ASP.NET Core Web API project that serves as the backend. It handles:
-    -   API endpoints for authentication, products, and suppliers.
-    -   Business logic and data access using the Repository pattern.
-    -   Database management with Entity Framework Core.
-    -   User and role management with ASP.NET Core Identity.
-    -   JWT generation and validation for securing the API.
+- **ServerApp (Backend)**: ASP.NET Core Web API handling business logic, the Repository pattern, EF Core database access, and Identity management.
+- **ClientApp (Frontend)**: Blazor WebAssembly providing a responsive, logic-driven UI that consumes the API using a secure HttpClient pipeline.
+- **SharedApp (Core)**: A central library containing unified DTOs (Data Transfer Objects), Domain Models, and Validation rules used by both the client and server.
+- **InventorySystem.Tests (QA)**: An xUnit testing project that utilizes Moq to isolate and verify the behavior of Services and Controllers.
 
--   **`ClientApp`**: A Blazor WebAssembly project that provides the user interface. It is responsible for:
-    -   Rendering all UI components and pages.
-    -   Making HTTP requests to the `ServerApp` API.
-    -   Managing client-side authentication state and token storage in the browser's local storage.
-    -   Providing a responsive user experience.
-
--   **`SharedApp`**: A .NET class library containing code shared between the `ServerApp` and `ClientApp`. This includes:
-    -   Domain models (`Product`, `Supplier`).
-    -   Data Transfer Objects (DTOs) for API communication.
-    -   Validation rules using FluentValidation to ensure consistency on both client and server.
-      
-- **InventorySystem.Tests**: An xUnit testing project that utilizes Moq to isolate and verify the behavior of Services and Controllers.
 
 ---
 
 ## Tech Stack
 
-- **Frontend:** Blazor WebAssembly
-- **Backend:** ASP.NET Core 8 Web API
-- **Testing:** xUnit, Moq
-- **Database:** SQL Server
-- **ORM:** Entity Framework Core
-- **Authentication:** ASP.NET Identity with JWT
-- **Validation:** FluentValidation
-- **Logging:** Serilog
-- **Version Control:** Git
+- **Frontend**: Blazor WebAssembly
+- **Backend**: ASP.NET Core 8 Web API
+- **Testing**: xUnit, Moq
+- **Containerization**: Docker & Docker Compose
+- **Database**: SQL Server
+- **ORM**: Entity Framework Core
+- **Authentication**: ASP.NET Identity with JWT
+- **Validation**: FluentValidation
+- **Logging**: Serilog
+
 
 ---
 
-## Getting Started
+### Getting Started
 
-### Prerequisites
+# Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download)
-- SQL Server
-- Visual Studio 2022 / VS Code
-- Node.js & npm (optional, if you want to manage client-side packages)
+- .NET 8 SDK
+- Docker Desktop (Recommended)
+- SQL Server (If running locally without Docker)
+   
 
 ---
 
-### Setup Instructions
+### Setup Instructions (The Docker Way - Recommended)
+
 
 1. **Clone the repository**
 
-git clone <your-repo-url>
-cd ProductSupplierManager
+        git clone <https://github.com/NompumeleloMbhense/InventoryManagementSystem>
+        cd InventoryManagementSystem
 
-2. **Configure the database connection**
+2. **Configure Secrets**
+Create a .env file in the root directory and add the following:
 
-Update the connection string in appsettings.json:
-"ConnectionStrings": {
-  "InventoryDBConnection": "Server=YOUR_SERVER_NAME;Database=InventoryDB;Trusted_Connection=True;MultipleActiveResultSets=true"
-}
+        # Create a .env file and fill in your own secure values:
+        DB_PASSWORD=your_strong_password_here
+        JWT_KEY=your_very_long_secret_key_here
+        ADMIN_EMAIL=admin@yourdomain.com
+        ADMIN_PASSWORD=your_admin_password_here
 
-3. **Apply Migrations and Seed Data**
+3. **Run the Application**
 
-The application automatically applies migrations and seeds initial data (Admin, User, products, suppliers) on startup.
+        docker-compose up --build
 
-4. **Run the Application**
+Access the app at http://localhost:5050.
 
-    - Open the solution in Visual Studio and run the project.
-    - The Blazor client runs on http://localhost:5065 by default.
-
-5. **Access the App**
-
-    - Home page: /
-    - Products page: /products (requires login)
-    - Suppliers page: /suppliers (requires login)
-    - Register a new user: /register
-    - Login: /login
 
 ---
 
-### User Accounts
+### Setup Instructions (The Local Way)
 
-The app seeds initial users:
+**1. Configure Connection String**
+Update ServerApp/appsettings.json with your local SQL Server instance details.
 
-- Admin
-    - Email: admin@example.com
-    - Password: Admin123!
-- User
-    - Email: user@example.com
-    - Password: User123!
+**2.Run Tests**
 
----
+    dotnet test
 
-### Usage Flow
+**3. Launch the Projects**
+Run the ServerApp and ClientApp projects simultaneously using Visual Studio or dotnet run.
 
-1. Visit the Home page (/) to see the welcome screen.
-2. Register as a new user or log in with an existing account.
-3. Once logged in:
-    - Access Products and Suppliers pages.
-    - Admin users can add, edit, or delete products and suppliers.
-4. Logout using the Logout button, which will clear your token and require re-login to access protected pages.
 
 ---
 
 ### Challenges & How I Overcame Them
 
-**Challenge:**
-- Nesting <AuthorizeView> tags caused the compiler to crash because it couldn't differentiate between multiple context variables.
+**Challenge: Refactoring for Testability**
+- **Problem**: I initially used FluentValidation’s ValidateAndThrowAsync extension method. While it made the code shorter, it was nearly impossible to mock in unit tests, leading to confusing NullReferenceExceptions.
+- **Solution**: I refactored the Controllers to use Explicit Validation. By calling await _validator.ValidateAsync(dto) and manually throwing the exception, the code became much easier to mock and test.
 
-**Solution:**
-- Switched to a C# Logic Approach in the UI. By using @if (isAuthenticated) and @if (isAdmin), I removed the variable naming
-  conflict entirely.
+**Challenge: Resolving Build Ambiguity (RZ9999)**
+- **Problem**: Nesting <AuthorizeView> tags inside the Router and Layout caused the compiler to crash because it couldn't differentiate between multiple context variables.
+- **Solution**: Switched to a C# Logic Approach in the main layout and nav menu. By using @if (isAuthenticated) and @if (isAdmin) in the @code block, I removed the variable naming conflict entirely.
 
-**What I Learned:**
--  Sometimes standard C# logic is more robust than specialized framework tags, especially in complex layouts.
+**Challenge: DTO Unification**
+- **Problem**: Maintaining separate models in the ClientApp and SharedApp caused frequent "sync" bugs.
+- **Solution**: Deleted duplicate models and unified everything into the SharedApp. I refactored them from positional records to property-based records to support Blazor's two-way data binding and seamless JSON serialization.
 
-**Challenge:**
-  - I was maintaining separate models in the ClientApp and SharedApp.
-
-**Solution:**
-  - Deleted duplicate models and unified everything into the SharedApp. I refactored them from positional records to
-    property-based records to support Blazor's two-way data binding.
-
-
-**Challenge:**
-  - At first, it was tempting to return database entities directly from the API to the frontend.
-  - However, this tightly couples the database model to the client and exposes internal structure unnecessarily.
-
-**Solution:**
-  - I introduced DTOs (Data Transfer Objects) to separate:
-  - Database models (Entities)
-  - API contract (DTOs)
-  - UI models (Client-side models)
-
-**What I learned:**
-- DTOs enforce clean separation of concerns and protect the API boundary. They make the system more scalable and secure.
+--- 
 
 ### Future Improvements
 
-    - Add refresh tokens to avoid frequent logins.
-    - Add sorting and advanced filtering for products and suppliers.
-    - Audit Logs: Track which users made specific changes to inventory stock.
-    - Enhance UI with more modern styling and mobile responsiveness.
+- **Refresh Tokens**: Implement automated token renewal to prevent users from being logged out during active sessions.
+- **Advanced Filtering**: Add multi-column sorting and date-range filters for the Stock Movement History
+- **Product Images**: Integrate Azure Blob Storage or local volume storage for product thumbnails.
+- **Integration Testing**: Add WebApplicationFactory tests to verify the full API-to-Database pipeline.
+
 
 ---
 
