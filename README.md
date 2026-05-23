@@ -20,7 +20,7 @@ for stock movements, JWT-based security, and a fully containerized environment.
 
 ## System Architecture
 
-# The application follows a Clean Architecture pattern across four distinct projects:
+**The application follows a Clean Architecture pattern across four distinct projects:**
 
 - **ServerApp (Backend)**: ASP.NET Core Web API handling business logic, the Repository pattern, EF Core database access, and Identity management.
 - **ClientApp (Frontend)**: Blazor WebAssembly providing a responsive, logic-driven UI that consumes the API using a secure HttpClient pipeline.
@@ -47,7 +47,7 @@ for stock movements, JWT-based security, and a fully containerized environment.
 
 ### Getting Started
 
-# Prerequisites
+**Prerequisites**
 
 - .NET 8 SDK
 - Docker Desktop (Recommended)
@@ -125,42 +125,64 @@ Run the ServerApp and ClientApp projects simultaneously using Visual Studio or d
 
 ### Images
 
-<img width="800" height="360" alt="AdminLogin" src="https://github.com/user-attachments/assets/43a94b17-a137-421c-abe8-23213e64b53f" />
+**Log In**
+
+<img width="800" height="361" alt="Login" src="https://github.com/user-attachments/assets/18e5def2-aacb-4fd5-a37b-6dad9e28a76f" />
 
 
+**Dashboard**
+
+<img width="800" height="365" alt="Dashboard" src="https://github.com/user-attachments/assets/f1cbde6e-0271-4118-acaf-3e85de054603" />
 
 
-<img width="800" height="364" alt="Dashboard" src="https://github.com/user-attachments/assets/13591dad-6ba9-4a69-a3ac-34784ceaafe2" />
+**Products List**
+
+<img width="800" height="362" alt="ProductsList" src="https://github.com/user-attachments/assets/e1b706d5-3729-4c84-af62-a60273ea3c79" />
 
 
+**Add Product**
+
+<img width="800" height="364" alt="AddProduct" src="https://github.com/user-attachments/assets/ed22b114-a359-4c11-9ce0-8d4472c8c578" />
 
 
-<img width="800" height="362" alt="SearchProduct" src="https://github.com/user-attachments/assets/144a7174-535e-4616-994d-43f32122f0f5" />
+**Search Product**
+
+<img width="800" height="364" alt="SearchProduct" src="https://github.com/user-attachments/assets/29e1005f-83fd-406f-968c-af1c63810f7b" />
 
 
+**Product Details**
+
+<img width="1913" height="866" alt="ProductDetails" src="https://github.com/user-attachments/assets/7c6d625d-9e5d-4634-893c-3ddae8170d43" />
 
 
-<img width="800" height="364" alt="AddProduct" src="https://github.com/user-attachments/assets/7f5e08cc-3e27-4830-ad1e-2e74abd0b694" />
+**Update Product**
+
+<img width="800" height="360" alt="EditProduct" src="https://github.com/user-attachments/assets/248ecc9c-a745-460e-b384-24874d222540" />
 
 
+**Delete Product**
+
+<img width="800" height="365" alt="DeleteProduct" src="https://github.com/user-attachments/assets/24feb5df-9bf1-4086-bdd3-d2d7c5b0efc0" />
 
 
-<img width="800" height="364" alt="ProductDetails" src="https://github.com/user-attachments/assets/fb3a621f-3726-4e94-b142-0e09ce25508e" />
+**Suppliers List**
+
+<img width="1908" height="862" alt="SuppliersList" src="https://github.com/user-attachments/assets/8fb70006-d384-4f7e-997b-09f33bb5bb32" />
 
 
+**Supplier Details**
+
+<img width="1910" height="860" alt="SupplierDetails" src="https://github.com/user-attachments/assets/d48601ed-e91f-4bfe-b918-a1c5eacd3fc8" />
 
 
-<img width="800" height="363" alt="UpdateProduct" src="https://github.com/user-attachments/assets/9086d39f-72b4-47bd-956c-2e39e576dcd7" />
+**Delete Supplier**
+
+<img width="800" height="360" alt="DeleteSupplier" src="https://github.com/user-attachments/assets/806616e0-80b2-4870-8d1f-daa61c445cef" />
 
 
+**input Errors**
 
-
-<img width="800" height="365" alt="DeleteProduct" src="https://github.com/user-attachments/assets/d3145f7e-0dff-4985-a535-679150b9387e" />
-
-
-
-
-<img width="800" height="361" alt="DeleteSupplierWithProducts" src="https://github.com/user-attachments/assets/ed68983c-8cff-46d0-876d-daa7b297b844" />
+<img width="1897" height="863" alt="InputErrors" src="https://github.com/user-attachments/assets/adc4cd56-830d-4ae3-ae6e-8a7af859b328" />
 
 
 ---
